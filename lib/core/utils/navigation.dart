@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../features/chat/presentation/screens/group_chat_screen.dart';
+import '../../features/identity/presentation/screens/identity_reveal_screen.dart';
+import '../../features/room/presentation/screens/join_room_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -31,19 +34,15 @@ class AppNavigator {
     switch (settings.name) {
       case AppRoutes.joinRoom:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Join Room (Placeholder)')),
-          ),
+          builder: (_) => const JoinRoomScreen(),
           settings: settings,
         );
 
       case AppRoutes.identityReveal:
         final args = settings.arguments as IdentityRevealArgs?;
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(
-              child: Text('Identity Reveal for Room: ${args?.roomCode ?? "Unknown"}'),
-            ),
+          builder: (_) => IdentityRevealScreen(
+            roomCode: args?.roomCode ?? 'DEMO99',
           ),
           settings: settings,
         );
@@ -51,10 +50,9 @@ class AppNavigator {
       case AppRoutes.chat:
         final args = settings.arguments as ChatArgs?;
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(
-              child: Text('Chat in Room: ${args?.roomCode ?? "Unknown"} as ${args?.username ?? "Anonymous"}'),
-            ),
+          builder: (_) => GroupChatScreen(
+            roomCode: args?.roomCode ?? 'DEMO99',
+            username: args?.username ?? 'Anonymous',
           ),
           settings: settings,
         );
@@ -71,4 +69,3 @@ class AppNavigator {
     }
   }
 }
-

@@ -35,6 +35,40 @@ class ChatRepositoryImpl implements ChatRepository {
     });
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> getRawMessagesStream(String roomCode) {
+    return _messagesRef(roomCode)
+        .orderBy('createdAt', descending: true)
+        .limit(30)
+        .snapshots(includeMetadataChanges: true);
+  }
+
+  @override
+  Future<List<MessageModel>> fetchOlderMessages({
+    required String roomCode,
+    required dynamic lastDocument,
+    int limit = 20,
+  }) async {
+    try {
+      if (lastDocument is! DocumentSnapshot) return [];
+
+      final querySnapshot = await _messagesRef(roomCode)
+          .orderBy('createdAt', descending: true)
+          .startAfterDocument(lastDocument)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs.map(MessageModel.fromFirestore).toList();
+    } on FirebaseException catch (e) {
+      throw ServerException(
+        e.message ?? 'Failed to fetch older messages.',
+        e.code,
+      );
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw ServerException('Unexpected error fetching history: $e');
+    }
+  }
+
   @override
   Future<void> sendMessage({
     required String roomCode,
@@ -94,3 +128,4 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 }
+

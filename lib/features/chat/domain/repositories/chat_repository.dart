@@ -12,6 +12,13 @@ abstract class ChatRepository {
     required String senderName,
   });
 
+  /// Fetches older messages using cursor pagination.
+  Future<List<MessageModel>> fetchOlderMessages({
+    required String roomCode,
+    required dynamic lastDocument,
+    int limit = 20,
+  });
+
   /// Registers user membership and increments room member counter if first join.
   Future<void> registerMember({
     required String roomCode,
@@ -19,3 +26,4 @@ abstract class ChatRepository {
     required String username,
   });
 }
+

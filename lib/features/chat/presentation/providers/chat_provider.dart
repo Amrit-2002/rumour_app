@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../../core/errors/exceptions.dart';
+import '../../data/repositories/chat_repository_impl.dart';
 import '../../domain/models/message_model.dart';
 import '../../domain/repositories/chat_repository.dart';
 
@@ -12,13 +13,18 @@ class ChatProvider extends ChangeNotifier {
   List<MessageModel> _messages = [];
   bool _isLoading = false;
   bool _isSending = false;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
   String? _errorMessage;
   String? _activeRoomCode;
-  StreamSubscription<List<MessageModel>>? _messagesSubscription;
+  dynamic _lastDocumentCursor;
+  StreamSubscription? _messagesSubscription;
 
   List<MessageModel> get messages => _messages;
   bool get isLoading => _isLoading;
   bool get isSending => _isSending;
+  bool get isLoadingMore => _isLoadingMore;
+  bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
   String? get activeRoomCode => _activeRoomCode;
 
@@ -29,12 +35,13 @@ class ChatProvider extends ChangeNotifier {
     required String username,
   }) {
     if (_activeRoomCode == roomCode && _messagesSubscription != null) {
-      return; // Already listening to this room
+      return; // Already active
     }
 
     _leaveRoomInternal();
     _activeRoomCode = roomCode.toUpperCase();
     _isLoading = true;
+    _hasMore = true;
     _errorMessage = null;
     notifyListeners();
 
@@ -45,22 +52,46 @@ class ChatProvider extends ChangeNotifier {
       username: username,
     );
 
-    // Subscribe to Firestore snapshots
-    _messagesSubscription = _chatRepository
-        .getMessagesStream(roomCode)
-        .listen(
-      (newMessages) {
-        _messages = newMessages;
-        _isLoading = false;
-        _errorMessage = null;
-        notifyListeners();
-      },
-      onError: (error) {
-        _isLoading = false;
-        _errorMessage = error is AppException ? error.message : 'Chat error: $error';
-        notifyListeners();
-      },
-    );
+    // Subscribe to Firestore stream
+    final repo = _chatRepository;
+    if (repo is ChatRepositoryImpl) {
+      _messagesSubscription = repo.getRawMessagesStream(roomCode).listen(
+        (snapshot) {
+          final streamMessages =
+              snapshot.docs.map(MessageModel.fromFirestore).toList();
+          if (snapshot.docs.isNotEmpty) {
+            _lastDocumentCursor = snapshot.docs.last;
+          }
+          _mergeMessages(streamMessages);
+          _isLoading = false;
+          _errorMessage = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _isLoading = false;
+          _errorMessage =
+              error is AppException ? error.message : 'Chat error: $error';
+          notifyListeners();
+        },
+      );
+    } else {
+      _messagesSubscription = _chatRepository
+          .getMessagesStream(roomCode)
+          .listen(
+        (newMessages) {
+          _mergeMessages(newMessages);
+          _isLoading = false;
+          _errorMessage = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _isLoading = false;
+          _errorMessage =
+              error is AppException ? error.message : 'Chat error: $error';
+          notifyListeners();
+        },
+      );
+    }
   }
 
   /// Sends a message into the active room.
@@ -93,11 +124,53 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  /// Paginates older messages using startAfterDocument cursor.
+  Future<void> fetchOlderMessages(String roomCode) async {
+    if (!_hasMore || _isLoadingMore || _lastDocumentCursor == null) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      final older = await _chatRepository.fetchOlderMessages(
+        roomCode: roomCode,
+        lastDocument: _lastDocumentCursor,
+        limit: 20,
+      );
+
+      if (older.isEmpty) {
+        _hasMore = false;
+      } else {
+        _mergeMessages(older);
+      }
+    } catch (e) {
+      debugPrint('Error fetching older messages: $e');
+    } finally {
+      _isLoadingMore = false;
+      notifyListeners();
+    }
+  }
+
+  /// Deduplicates and orders messages descending (newest first).
+  void _mergeMessages(List<MessageModel> newMessages) {
+    final Map<String, MessageModel> map = {
+      for (final m in _messages) m.id: m,
+    };
+    for (final m in newMessages) {
+      map[m.id] = m;
+    }
+    _messages = map.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
   void _leaveRoomInternal() {
     _messagesSubscription?.cancel();
     _messagesSubscription = null;
     _messages = [];
     _activeRoomCode = null;
+    _lastDocumentCursor = null;
+    _isLoadingMore = false;
+    _hasMore = true;
     _errorMessage = null;
   }
 

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../domain/models/message_model.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_input_bar.dart';
+import '../widgets/date_separator_chip.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final String roomCode;
@@ -24,6 +26,7 @@ class GroupChatScreen extends StatefulWidget {
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
   late final List<MessageModel> _fallbackMessages;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -37,6 +40,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         createdAt: DateTime.now(),
       ),
     ];
+
+    _scrollController.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final chatProvider = context.read<ChatProvider?>();
       if (chatProvider != null) {
@@ -49,6 +55,25 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
         );
       }
     });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final chatProvider = context.read<ChatProvider?>();
+      if (chatProvider != null &&
+          !chatProvider.isLoadingMore &&
+          chatProvider.hasMore) {
+        chatProvider.fetchOlderMessages(widget.roomCode);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _handleSendMessage(String text) {
@@ -131,12 +156,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
-  String _formatTime(DateTime date) {
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider?>();
@@ -145,6 +164,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
     final messages = chatProvider?.messages ?? _fallbackMessages;
     final isSending = chatProvider?.isSending ?? false;
+    final isLoadingMore = chatProvider?.isLoadingMore ?? false;
     final errorMessage = chatProvider?.errorMessage;
 
     return Scaffold(
@@ -224,26 +244,6 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ),
       body: Column(
         children: [
-          // Centered Date Chip matching Figma ("Today")
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
-              decoration: BoxDecoration(
-                color: AppColors.secondarySurface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'Today',
-                style: TextStyle(
-                  color: AppColors.secondaryText,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-
           // Error banner if any
           if (errorMessage != null)
             Container(
@@ -252,23 +252,29 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               decoration: BoxDecoration(
                 color: AppColors.errorAccent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.errorAccent.withValues(alpha: 0.4)),
+                border: Border.all(
+                  color: AppColors.errorAccent.withValues(alpha: 0.4),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.errorAccent, size: 18),
+                  const Icon(Icons.info_outline_rounded,
+                      color: AppColors.errorAccent, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       errorMessage,
-                      style: const TextStyle(color: AppColors.errorAccent, fontSize: 12),
+                      style: const TextStyle(
+                        color: AppColors.errorAccent,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-          // Real-time message feed
+          // Real-time message feed with dynamic date separators and pagination
           Expanded(
             child: messages.isEmpty
                 ? Center(
@@ -283,20 +289,53 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                     ),
                   )
                 : ListView.builder(
+                    controller: _scrollController,
                     reverse: true,
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
-                    itemCount: messages.length,
+                    itemCount: messages.length + (isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      // Top loading indicator when paginating older messages
+                      if (isLoadingMore && index == messages.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          child: Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primaryAccent,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
                       final message = messages[index];
-                      final isMe = (currentUid.isNotEmpty && message.senderId == currentUid) ||
+                      final isMe = (currentUid.isNotEmpty &&
+                              message.senderId == currentUid) ||
                           message.senderName == widget.username;
 
-                      return ChatBubble(
-                        text: message.text,
-                        senderName: message.senderName,
-                        time: _formatTime(message.createdAt),
-                        isMe: isMe,
-                        isPending: message.isPending,
+                      // Check if a date chip should be displayed above this message
+                      final bool showDateChip = (index == messages.length - 1) ||
+                          !DateFormatter.isSameDay(
+                            message.createdAt,
+                            messages[index + 1].createdAt,
+                          );
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (showDateChip)
+                            DateSeparatorChip(date: message.createdAt),
+                          ChatBubble(
+                            text: message.text,
+                            senderName: message.senderName,
+                            time: DateFormatter.formatTime(message.createdAt),
+                            isMe: isMe,
+                            isPending: message.isPending,
+                          ),
+                        ],
                       );
                     },
                   ),

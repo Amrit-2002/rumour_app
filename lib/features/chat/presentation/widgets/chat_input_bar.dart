@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/input_validator.dart';
 
 class ChatInputBar extends StatefulWidget {
   final ValueChanged<String> onSend;
@@ -42,7 +43,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   void _handleSend() {
     final text = _textController.text.trim();
-    if (text.isEmpty || widget.isSending) return;
+    if (InputValidator.validateMessage(text) != null || widget.isSending) return;
 
     widget.onSend(text);
     _textController.clear();

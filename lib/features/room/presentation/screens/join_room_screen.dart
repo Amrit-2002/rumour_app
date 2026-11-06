@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/utils/input_validator.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../providers/room_provider.dart';
@@ -47,9 +48,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
 
   Future<void> _handleJoinRoom([String? customCode]) async {
     final code = (customCode ?? _codeController.text).trim().toUpperCase();
-    if (code.length != AppConstants.roomCodeLength) {
+    final validationError = InputValidator.validateRoomCode(code);
+    if (validationError != null) {
       setState(() {
-        _localError = 'Please enter a 6-digit room code';
+        _localError = validationError;
       });
       return;
     }

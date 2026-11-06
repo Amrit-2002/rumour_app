@@ -18,3 +18,4 @@ abstract class IdentityRepository {
   /// Clears stored identity for a given room code.
   Future<void> clearRoomIdentity(String roomCode);
 }
+

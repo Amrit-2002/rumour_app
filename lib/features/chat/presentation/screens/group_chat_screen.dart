@@ -1,26 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/navigation.dart';
+import '../../domain/models/message_model.dart';
+import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_input_bar.dart';
-
-class _MockMessage {
-  final String id;
-  final String senderName;
-  final String text;
-  final String time;
-  final bool isMe;
-  final bool isPending;
-
-  const _MockMessage({
-    required this.id,
-    required this.senderName,
-    required this.text,
-    required this.time,
-    required this.isMe,
-    this.isPending = false,
-  });
-}
 
 class GroupChatScreen extends StatefulWidget {
   final String roomCode;
@@ -37,45 +23,61 @@ class GroupChatScreen extends StatefulWidget {
 }
 
 class _GroupChatScreenState extends State<GroupChatScreen> {
-  late final List<_MockMessage> _messages;
+  late final List<MessageModel> _fallbackMessages;
 
   @override
   void initState() {
     super.initState();
-    // Reversed list matching Figma chat design
-    _messages = [
-      _MockMessage(
-        id: '2',
-        senderName: widget.username,
-        text: 'Hello! glad to join you guys. I have a few ideas',
-        time: '10:15',
-        isMe: true,
-        isPending: false,
-      ),
-      const _MockMessage(
+    _fallbackMessages = [
+      MessageModel(
         id: '1',
+        senderId: 'sample_other',
         senderName: 'Wild Panther',
-        text: 'Hi all! come to this room to discuss the project and suggest cool apps or anything with teams.',
-        time: '10:14',
-        isMe: false,
+        text: 'Hello! glad to join you guys. I have a few ideas',
+        createdAt: DateTime.now(),
       ),
     ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final chatProvider = context.read<ChatProvider?>();
+      if (chatProvider != null) {
+        final authService = context.read<AuthService?>();
+        final uid = authService?.currentUid ?? 'anon_user';
+        chatProvider.enterRoom(
+          roomCode: widget.roomCode,
+          uid: uid,
+          username: widget.username,
+        );
+      }
+    });
   }
 
   void _handleSendMessage(String text) {
-    setState(() {
-      _messages.insert(
-        0,
-        _MockMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          senderName: widget.username,
-          text: text,
-          time: '10:16',
-          isMe: true,
-          isPending: false,
-        ),
+    final chatProvider = context.read<ChatProvider?>();
+    final authService = context.read<AuthService?>();
+    final uid = authService?.currentUid ?? 'anon_user';
+
+    if (chatProvider != null) {
+      chatProvider.sendMessage(
+        roomCode: widget.roomCode,
+        text: text,
+        senderId: uid,
+        senderName: widget.username,
       );
-    });
+    } else {
+      // Standalone test fallback
+      setState(() {
+        _fallbackMessages.insert(
+          0,
+          MessageModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            senderId: uid,
+            senderName: widget.username,
+            text: text,
+            createdAt: DateTime.now(),
+          ),
+        );
+      });
+    }
   }
 
   void _confirmLeaveRoom() {
@@ -115,6 +117,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ),
             onPressed: () {
               Navigator.pop(dialogContext);
+              context.read<ChatProvider?>()?.leaveRoom();
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 AppRoutes.joinRoom,
@@ -128,8 +131,22 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 
+  String _formatTime(DateTime date) {
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final chatProvider = context.watch<ChatProvider?>();
+    final authService = context.watch<AuthService?>();
+    final currentUid = authService?.currentUid ?? '';
+
+    final messages = chatProvider?.messages ?? _fallbackMessages;
+    final isSending = chatProvider?.isSending ?? false;
+    final errorMessage = chatProvider?.errorMessage;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -227,27 +244,67 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ),
           ),
 
-          // Message feed
-          Expanded(
-            child: ListView.builder(
-              reverse: true,
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return ChatBubble(
-                  text: message.text,
-                  senderName: message.senderName,
-                  time: message.time,
-                  isMe: message.isMe,
-                  isPending: message.isPending,
-                );
-              },
+          // Error banner if any
+          if (errorMessage != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.errorAccent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.errorAccent.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: AppColors.errorAccent, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: AppColors.errorAccent, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
             ),
+
+          // Real-time message feed
+          Expanded(
+            child: messages.isEmpty
+                ? Center(
+                    child: Text(
+                      'No rumours yet.\nBe the first to share one!',
+                      style: TextStyle(
+                        color: AppColors.secondaryText.withValues(alpha: 0.6),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      final isMe = (currentUid.isNotEmpty && message.senderId == currentUid) ||
+                          message.senderName == widget.username;
+
+                      return ChatBubble(
+                        text: message.text,
+                        senderName: message.senderName,
+                        time: _formatTime(message.createdAt),
+                        isMe: isMe,
+                        isPending: message.isPending,
+                      );
+                    },
+                  ),
           ),
 
           // Pinned bottom input bar matching Figma
           ChatInputBar(
+            isSending: isSending,
             onSend: _handleSendMessage,
           ),
         ],

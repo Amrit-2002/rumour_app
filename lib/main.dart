@@ -5,6 +5,9 @@ import 'app.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/firestore_service.dart';
 import 'core/services/storage_service.dart';
+import 'features/chat/data/repositories/chat_repository_impl.dart';
+import 'features/chat/domain/repositories/chat_repository.dart';
+import 'features/chat/presentation/providers/chat_provider.dart';
 import 'features/identity/data/repositories/identity_repository_impl.dart';
 import 'features/identity/domain/repositories/identity_repository.dart';
 import 'features/identity/presentation/providers/identity_provider.dart';
@@ -54,6 +57,13 @@ void main() async {
         ChangeNotifierProxyProvider<IdentityRepository, IdentityProvider>(
           create: (context) => IdentityProvider(context.read<IdentityRepository>()),
           update: (_, repo, prev) => prev ?? IdentityProvider(repo),
+        ),
+        Provider<ChatRepository>(
+          create: (_) => ChatRepositoryImpl(),
+        ),
+        ChangeNotifierProxyProvider<ChatRepository, ChatProvider>(
+          create: (context) => ChatProvider(context.read<ChatRepository>()),
+          update: (_, repo, prev) => prev ?? ChatProvider(repo),
         ),
       ],
       child: const RumourApp(),

@@ -67,3 +67,4 @@ class IdentityRepositoryImpl implements IdentityRepository {
     await _storageService.remove(_getKey(roomCode));
   }
 }
+

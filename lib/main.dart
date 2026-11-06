@@ -1,7 +1,40 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'app.dart';
+import 'core/services/auth_service.dart';
+import 'core/services/firestore_service.dart';
+import 'core/services/storage_service.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const RumourApp());
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Configure Firestore offline persistence
+  FirestoreService.configurePersistence();
+
+  // Initialize local key-value persistence
+  final storageService = await StorageService.init();
+
+  // Initialize AuthService and authenticate anonymously
+  final authService = AuthService();
+  await authService.ensureAnonymousAuth().catchError((error) {
+    debugPrint('Anonymous auth deferred: $error');
+    return '';
+  });
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<StorageService>.value(value: storageService),
+        Provider<AuthService>.value(value: authService),
+      ],
+      child: const RumourApp(),
+    ),
+  );
 }

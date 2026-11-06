@@ -7,11 +7,11 @@ A high-performance, ephemeral anonymous group chat mobile application built with
 ## 📱 Features & Highlights
 
 - **🔑 6-Digit Room Codes:** Create collision-resistant 6-digit rooms (`[0-9A-Z]{6}`) or join existing rooms instantly.
-- **🎭 Deterministic Pseudonymity:** Generates memorable **Adjective + Animal** personas (e.g., *“Brave Badger”*, *“Neon Falcon”*) drawn from 2,500 combinations without collecting any personal identifiable information (no phone, email, or KYC).
+- **🎭 RandomUser API Anonymous Identity:** Generates unique anonymous personas on demand via HTTP integration with the **RandomUser API** (`GET https://randomuser.me/api/`), formatting API responses into clean, two-word display identities (e.g., *“Brave Badger”*) without collecting any personal identifiable information (no phone, email, or KYC).
 - **💾 Room-Scoped Local Persistence:** Uses `SharedPreferences` to cache assigned personas keyed by room (`room_identity_{roomCode}`). Returning to a previously visited room seamlessly restores your persona, while different rooms grant distinct identities.
 - **⚡ Real-Time Bi-Directional Messaging:** Real-time message streaming powered by Firestore subcollections (`rooms/{roomCode}/messages`), delivering sub-500ms latency.
 - **📶 Resilient Offline Persistence & Queued Writes:** Powered by native Cloud Firestore multi-level caching (`persistenceEnabled: true`). Read message history while disconnected; messages typed offline are queued locally and automatically synced with server timestamps upon reconnection.
-- **🕒 Message Status & Sync Indicators:** Differentiated message bubbles (Neon Lime `#B6FF36` for *You* vs. Dark Slate `#191A20` for *Others*) with real-time sync indicators (Clock icon when pending offline write, double checkmark when synced).
+- **🕒 Message Status & Sync Indicators:** Differentiated message bubbles (Neon Lime `#BDF84F` for *You* vs. Dark Navy `#101521` for *Others*) with real-time sync indicators (Clock icon when pending offline write, double checkmark when synced).
 - **📅 Smart Date Separators & Pagination:** Automatically injects calendar day chips (*"Today"*, *"Yesterday"*, *"MMM d, yyyy"*) and supports cursor-based pagination (`startAfterDocument`) when scrolling up.
 - **🛡️ Battle-Tested Security Rules:** Cryptographic message ownership verified via Firebase Anonymous Authentication (`request.auth.uid == senderId`) with strict payload validation.
 
@@ -23,9 +23,9 @@ The UI implements the Figma design specifications:
 
 | Screen | Design Role | Key Visual Features |
 | :--- | :--- | :--- |
-| **1. Join A Room** | Entry Point | Circular dark badge with Neon Lime Key icon (`Icons.key_rounded`), 6-slot dash input container (`- - - - - -`), "Join Room" button, and "Create New Room" outline button. |
-| **2. Anonymous Identity Reveal** | Persona Acknowledgment | Circular back button, centered Room # and member counter, dark hero card (`#191A20`) with stacked persona name (**`Brave\nBadger`** in 34sp Neon Lime), privacy explanation, and **"Acknowledge and continue"** CTA. |
-| **3. Group Chat** | Real-Time Chat Feed | Back button with leave dialog, centered Room header with active member count, "Today" date chip, `@Sender` header on slate bubbles, `You` header on Neon Lime bubbles, and rounded input bar with paper plane send action. |
+| **1. Join A Room** | Entry Point | Official Rumour Key logo badge (`AppKeyLogo`), 6-slot dash input container (`- - - - - -`), "Join Room" button, and "Create New Room" outline button. |
+| **2. Anonymous Identity Reveal** | Persona Acknowledgment | Circular back button, centered Room # and member counter, dark hero card (`#101521`) with stacked persona name (**`Brave\nBadger`** in 38sp Neon Lime `#BDF84F`), privacy explanation, and **"Acknowledge and continue"** CTA. |
+| **3. Group Chat** | Real-Time Chat Feed | Back button with leave dialog, centered Room header with active dynamic member count, "Today" date chip, `@Sender` header on dark navy bubbles, `You` header on Neon Lime bubbles, and rounded input bar with circular lime send button. |
 
 ---
 
@@ -39,7 +39,7 @@ lib/
 ├── app.dart                   # MaterialApp, global theme & typed route generator
 │
 ├── core/                      # Cross-cutting foundational modules
-│   ├── constants/             # AppColors (#08090D, #B6FF36, #191A20), AppConstants
+│   ├── constants/             # AppColors (#09090B, #BDF84F, #101521), AppConstants
 │   ├── theme/                 # AppTheme (Material 3 dark theme)
 │   ├── utils/                 # DateFormatter, RoomCodeGenerator, InputValidator, Navigation
 │   ├── errors/                # Failures, Exceptions, AppErrorHandler
@@ -67,6 +67,7 @@ lib/
 2. **Native Firestore Offline Persistence over Custom SQLite:** Avoids brittle custom sync engines and race conditions. Firestore natively queues offline writes and provides `metadata.hasPendingWrites` to drive UI sync icons.
 3. **SharedPreferences for Identities:** $O(1)$ fast key-value lookups scoped to `room_identity_{roomCode}`, avoiding unnecessary relational SQL migrations.
 4. **Firebase Anonymous Authentication:** Guarantees cryptographic verification of message senders (`senderId == request.auth.uid`) preventing identity spoofing.
+5. **RandomUser API with Local Identity Caching:** Satisfies external identity specification by fetching personas via `https://randomuser.me/api/` on room creation/join, transforming them into two-word anonymous titles, and caching them locally against `room_identity_{roomCode}` so rejoining a room is instant and makes zero redundant network calls.
 
 ---
 

@@ -7,6 +7,7 @@ void main() {
       final now = DateTime(2026, 11, 5, 21, 15);
       final message = MessageModel(
         id: 'msg_001',
+        roomCode: 'RM5812',
         senderId: 'uid_123',
         senderName: 'Brave Badger',
         text: 'This is an anonymous rumour.',
@@ -16,6 +17,7 @@ void main() {
 
       final map = message.toMap();
       expect(map['id'], equals('msg_001'));
+      expect(map['roomCode'], equals('RM5812'));
       expect(map['senderId'], equals('uid_123'));
       expect(map['senderName'], equals('Brave Badger'));
       expect(map['text'], equals('This is an anonymous rumour.'));
@@ -25,12 +27,14 @@ void main() {
     test('MessageModel defaults isPending to false', () {
       final message = MessageModel(
         id: 'msg_002',
+        roomCode: 'RM5812',
         senderId: 'uid_456',
         senderName: 'Velvet Panther',
         text: 'Testing pending flag',
         createdAt: DateTime.now(),
       );
 
+      expect(message.roomCode, equals('RM5812'));
       expect(message.isPending, isFalse);
     });
   });

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MessageModel {
   final String id;
+  final String roomCode;
   final String senderId;
   final String senderName;
   final String text;
@@ -10,6 +11,7 @@ class MessageModel {
 
   const MessageModel({
     required this.id,
+    required this.roomCode,
     required this.senderId,
     required this.senderName,
     required this.text,
@@ -33,6 +35,7 @@ class MessageModel {
 
     return MessageModel(
       id: doc.id,
+      roomCode: data['roomCode'] as String? ?? '',
       senderId: data['senderId'] as String? ?? '',
       senderName: data['senderName'] as String? ?? 'Anonymous',
       text: data['text'] as String? ?? '',
@@ -44,6 +47,7 @@ class MessageModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'roomCode': roomCode,
       'senderId': senderId,
       'senderName': senderName,
       'text': text,

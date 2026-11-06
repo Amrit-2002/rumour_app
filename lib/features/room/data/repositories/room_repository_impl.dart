@@ -31,7 +31,7 @@ class RoomRepositoryImpl implements RoomRepository {
         'roomCode': roomCode,
         'createdAt': FieldValue.serverTimestamp(),
         'createdBy': uid,
-        'memberCount': 1,
+        'memberCount': 0,
         'isActive': true,
       });
 

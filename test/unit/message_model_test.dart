@@ -7,6 +7,7 @@ void main() {
       final now = DateTime.now();
       final msg = MessageModel(
         id: 'msg_99',
+        roomCode: 'RM5812',
         senderId: 'uid_test',
         senderName: 'Cosmic Otter',
         text: 'Encrypted payload',
@@ -14,6 +15,7 @@ void main() {
       );
 
       expect(msg.id, equals('msg_99'));
+      expect(msg.roomCode, equals('RM5812'));
       expect(msg.senderId, equals('uid_test'));
       expect(msg.senderName, equals('Cosmic Otter'));
       expect(msg.text, equals('Encrypted payload'));
@@ -24,6 +26,7 @@ void main() {
     test('isPending can be explicitly set to true for offline queued writes', () {
       final msg = MessageModel(
         id: 'msg_100',
+        roomCode: 'RM5812',
         senderId: 'uid_test',
         senderName: 'Cosmic Otter',
         text: 'Offline queued message',
@@ -37,6 +40,7 @@ void main() {
     test('toMap produces schema suitable for Firestore document set', () {
       final msg = MessageModel(
         id: 'msg_101',
+        roomCode: 'RM5812',
         senderId: 'uid_test',
         senderName: 'Neon Falcon',
         text: 'Rumour test',
@@ -45,6 +49,7 @@ void main() {
 
       final map = msg.toMap();
       expect(map['id'], equals('msg_101'));
+      expect(map['roomCode'], equals('RM5812'));
       expect(map['senderId'], equals('uid_test'));
       expect(map['senderName'], equals('Neon Falcon'));
       expect(map['text'], equals('Rumour test'));

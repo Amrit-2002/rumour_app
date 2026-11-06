@@ -18,6 +18,7 @@ class ChatProvider extends ChangeNotifier {
   bool _isFromCache = false;
   String? _errorMessage;
   String? _activeRoomCode;
+  String? _activeUid;
   dynamic _lastDocumentCursor;
   StreamSubscription? _messagesSubscription;
   StreamSubscription<int>? _memberCountSubscription;
@@ -46,17 +47,20 @@ class ChatProvider extends ChangeNotifier {
 
     _leaveRoomInternal();
     _activeRoomCode = roomCode.toUpperCase();
+    _activeUid = uid;
     _isLoading = true;
     _hasMore = true;
     _errorMessage = null;
     notifyListeners();
 
     // Register member in background
-    _chatRepository.registerMember(
-      roomCode: roomCode,
-      uid: uid,
-      username: username,
-    );
+    if (uid.isNotEmpty) {
+      _chatRepository.registerMember(
+        roomCode: roomCode,
+        uid: uid,
+        username: username,
+      );
+    }
 
     // Subscribe to real-time member count
     _memberCountSubscription?.cancel();
@@ -79,7 +83,7 @@ class ChatProvider extends ChangeNotifier {
         (snapshot) {
           final streamMessages =
               snapshot.docs.map(MessageModel.fromFirestore).toList();
-          if (snapshot.docs.isNotEmpty) {
+          if (snapshot.docs.isNotEmpty && _lastDocumentCursor == null) {
             _lastDocumentCursor = snapshot.docs.last;
           }
           _isFromCache = snapshot.metadata.isFromCache;
@@ -153,16 +157,20 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final older = await _chatRepository.fetchOlderMessages(
+      final result = await _chatRepository.fetchOlderMessages(
         roomCode: roomCode,
         lastDocument: _lastDocumentCursor,
         limit: 20,
       );
 
-      if (older.isEmpty) {
+      if (result.messages.isEmpty) {
         _hasMore = false;
       } else {
-        _mergeMessages(older);
+        _lastDocumentCursor = result.lastDocument ?? _lastDocumentCursor;
+        if (result.messages.length < 20) {
+          _hasMore = false;
+        }
+        _mergeMessages(result.messages);
       }
     } catch (e) {
       debugPrint('Error fetching older messages: $e');
@@ -185,6 +193,12 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void _leaveRoomInternal() {
+    if (_activeRoomCode != null && _activeUid != null && _activeUid!.isNotEmpty) {
+      _chatRepository.unregisterMember(
+        roomCode: _activeRoomCode!,
+        uid: _activeUid!,
+      );
+    }
     _messagesSubscription?.cancel();
     _messagesSubscription = null;
     _memberCountSubscription?.cancel();
@@ -192,6 +206,7 @@ class ChatProvider extends ChangeNotifier {
     _memberCount = 1;
     _messages = [];
     _activeRoomCode = null;
+    _activeUid = null;
     _lastDocumentCursor = null;
     _isLoadingMore = false;
     _hasMore = true;
@@ -207,6 +222,12 @@ class ChatProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    if (_activeRoomCode != null && _activeUid != null && _activeUid!.isNotEmpty) {
+      _chatRepository.unregisterMember(
+        roomCode: _activeRoomCode!,
+        uid: _activeUid!,
+      );
+    }
     _messagesSubscription?.cancel();
     _messagesSubscription = null;
     _memberCountSubscription?.cancel();

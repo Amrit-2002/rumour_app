@@ -95,12 +95,25 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     }
 
     String uid = authService?.currentUid ?? '';
-    if (uid.isEmpty) {
+    if (uid.isEmpty && authService != null) {
       try {
-        uid = await authService?.ensureAnonymousAuth() ?? 'anonymous';
-      } catch (_) {
-        uid = 'anonymous';
+        uid = await authService.getOrEnsureUid();
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _localError =
+              'Authentication failed. Please check your internet connection.';
+        });
+        return;
       }
+    }
+
+    if (uid.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _localError = 'Authentication required to create room.';
+      });
+      return;
     }
 
     final code = await roomProvider.createRoom(uid);

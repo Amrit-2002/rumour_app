@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../domain/models/message_model.dart';
+import '../../domain/models/paginated_messages.dart';
 import '../../domain/repositories/chat_repository.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
@@ -64,13 +65,15 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<List<MessageModel>> fetchOlderMessages({
+  Future<PaginatedMessages> fetchOlderMessages({
     required String roomCode,
     required dynamic lastDocument,
     int limit = 20,
   }) async {
     try {
-      if (lastDocument is! DocumentSnapshot) return [];
+      if (lastDocument is! DocumentSnapshot) {
+        return const PaginatedMessages(messages: []);
+      }
 
       final querySnapshot = await _messagesRef(roomCode)
           .orderBy('createdAt', descending: true)
@@ -78,7 +81,15 @@ class ChatRepositoryImpl implements ChatRepository {
           .limit(limit)
           .get();
 
-      return querySnapshot.docs.map(MessageModel.fromFirestore).toList();
+      final messages =
+          querySnapshot.docs.map(MessageModel.fromFirestore).toList();
+      final nextCursor =
+          querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
+
+      return PaginatedMessages(
+        messages: messages,
+        lastDocument: nextCursor,
+      );
     } on FirebaseException catch (e) {
       throw ServerException(
         e.message ?? 'Failed to fetch older messages.',
@@ -101,6 +112,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final docRef = _messagesRef(roomCode).doc();
       await docRef.set({
         'id': docRef.id,
+        'roomCode': roomCode.toUpperCase(),
         'senderId': senderId,
         'senderName': senderName.trim(),
         'text': text.trim(),
@@ -146,6 +158,33 @@ class ChatRepositoryImpl implements ChatRepository {
       }
     } catch (_) {
       // Non-critical: failure to register member counter does not block chat
+    }
+  }
+
+  @override
+  Future<void> unregisterMember({
+    required String roomCode,
+    required String uid,
+  }) async {
+    try {
+      final roomDoc = _firestore.collection('rooms').doc(roomCode.toUpperCase());
+      final memberRef = roomDoc.collection('members').doc(uid);
+
+      final doc = await memberRef.get();
+      if (doc.exists) {
+        await memberRef.delete();
+        await _firestore.runTransaction((transaction) async {
+          final snapshot = await transaction.get(roomDoc);
+          if (snapshot.exists) {
+            final currentCount =
+                (snapshot.data()?['memberCount'] as num?)?.toInt() ?? 1;
+            final newCount = currentCount > 1 ? currentCount - 1 : 0;
+            transaction.update(roomDoc, {'memberCount': newCount});
+          }
+        }).catchError((_) {});
+      }
+    } catch (_) {
+      // Non-critical: failure to unregister member does not block chat exit
     }
   }
 }

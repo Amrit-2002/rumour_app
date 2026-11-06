@@ -15,6 +15,15 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
+  /// Returns the authenticated UID, or triggers anonymous sign-in if not yet signed in.
+  Future<String> getOrEnsureUid() async {
+    final uid = currentUid;
+    if (uid != null && uid.isNotEmpty) {
+      return uid;
+    }
+    return ensureAnonymousAuth();
+  }
+
   /// Ensures an anonymous user session exists, signing in silently if needed.
   Future<String> ensureAnonymousAuth() async {
     try {

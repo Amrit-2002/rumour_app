@@ -11,7 +11,7 @@ class RoomModel {
     required this.roomCode,
     required this.createdAt,
     required this.createdBy,
-    this.memberCount = 1,
+    this.memberCount = 0,
     this.isActive = true,
   });
 
@@ -32,7 +32,7 @@ class RoomModel {
       roomCode: data['roomCode'] ?? snapshot.id,
       createdAt: resolvedDate,
       createdBy: data['createdBy'] ?? '',
-      memberCount: (data['memberCount'] as num?)?.toInt() ?? 1,
+      memberCount: (data['memberCount'] as num?)?.toInt() ?? 0,
       isActive: data['isActive'] as bool? ?? true,
     );
   }

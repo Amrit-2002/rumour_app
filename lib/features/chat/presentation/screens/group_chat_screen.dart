@@ -35,6 +35,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     _fallbackMessages = [
       MessageModel(
         id: '1',
+        roomCode: widget.roomCode,
         senderId: 'sample_other',
         senderName: 'PinkPanthress',
         text: 'Hi all! I came to visit your city for the weekend. Suggest coffee shop for breakfast with family.',
@@ -44,11 +45,17 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
 
     _scrollController.addListener(_onScroll);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final chatProvider = context.read<ChatProvider?>();
       if (chatProvider != null) {
         final authService = context.read<AuthService?>();
-        final uid = authService?.currentUid ?? 'anon_user';
+        String uid = authService?.currentUid ?? '';
+        if (uid.isEmpty && authService != null) {
+          try {
+            uid = await authService.getOrEnsureUid();
+          } catch (_) {}
+        }
+        if (!mounted) return;
         chatProvider.enterRoom(
           roomCode: widget.roomCode,
           uid: uid,
@@ -77,10 +84,27 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     super.dispose();
   }
 
-  void _handleSendMessage(String text) {
+  Future<void> _handleSendMessage(String text) async {
     final chatProvider = context.read<ChatProvider?>();
     final authService = context.read<AuthService?>();
-    final uid = authService?.currentUid ?? 'anon_user';
+
+    String uid = authService?.currentUid ?? '';
+    if (uid.isEmpty && authService != null) {
+      try {
+        uid = await authService.getOrEnsureUid();
+      } catch (_) {}
+    }
+
+    if (uid.isEmpty && chatProvider != null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot send message: authentication failed.'),
+          backgroundColor: AppColors.errorAccent,
+        ),
+      );
+      return;
+    }
 
     if (chatProvider != null) {
       chatProvider.sendMessage(
@@ -96,7 +120,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           0,
           MessageModel(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            senderId: uid,
+            roomCode: widget.roomCode,
+            senderId: 'me',
             senderName: widget.username,
             text: text,
             createdAt: DateTime.now(),
@@ -168,9 +193,15 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     final isLoadingMore = chatProvider?.isLoadingMore ?? false;
     final errorMessage = chatProvider?.errorMessage;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _confirmLeaveRoom();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 12.0),
           child: Center(
@@ -317,9 +348,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                       }
 
                       final message = messages[index];
-                      final isMe = (currentUid.isNotEmpty &&
-                              message.senderId == currentUid) ||
-                          message.senderName == widget.username;
+                      final isMe = currentUid.isNotEmpty
+                          ? message.senderId == currentUid
+                          : message.senderId == 'me';
 
                       // Check if a date chip should be displayed above this message
                       final bool showDateChip = (index == messages.length - 1) ||
@@ -353,6 +384,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

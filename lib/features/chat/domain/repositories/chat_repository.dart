@@ -1,4 +1,5 @@
 import '../models/message_model.dart';
+import '../models/paginated_messages.dart';
 
 abstract class ChatRepository {
   /// Real-time stream of messages for a room, ordered newest first (descending).
@@ -16,7 +17,7 @@ abstract class ChatRepository {
   });
 
   /// Fetches older messages using cursor pagination.
-  Future<List<MessageModel>> fetchOlderMessages({
+  Future<PaginatedMessages> fetchOlderMessages({
     required String roomCode,
     required dynamic lastDocument,
     int limit = 20,
@@ -27,6 +28,12 @@ abstract class ChatRepository {
     required String roomCode,
     required String uid,
     required String username,
+  });
+
+  /// Unregisters user membership and decrements room member counter.
+  Future<void> unregisterMember({
+    required String roomCode,
+    required String uid,
   });
 }
 

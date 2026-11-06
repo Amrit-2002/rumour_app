@@ -27,11 +27,17 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final identityProvider = context.read<IdentityProvider?>();
       if (identityProvider != null) {
         final authService = context.read<AuthService?>();
-        final uid = authService?.currentUid ?? 'device_uid';
+        String uid = authService?.currentUid ?? '';
+        if (uid.isEmpty && authService != null) {
+          try {
+            uid = await authService.getOrEnsureUid();
+          } catch (_) {}
+        }
+        if (!mounted) return;
         identityProvider.resolveIdentity(
           roomCode: widget.roomCode,
           uid: uid,
@@ -51,7 +57,8 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
     final animal = identity?.animal ?? widget.initialAnimal ?? 'Badger';
     final isRestored = identity?.isRestored ?? false;
     final fullUsername = '$adjective $animal';
-    final memberCount = roomProvider?.activeRoom?.memberCount ?? 1;
+    final rawCount = roomProvider?.activeRoom?.memberCount ?? 0;
+    final memberCount = rawCount > 0 ? rawCount : 1;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -177,9 +184,16 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                             ),
                             const SizedBox(height: 12),
                             TextButton.icon(
-                              onPressed: () {
-                                final authService = context.read<AuthService?>();
-                                final uid = authService?.currentUid ?? 'device_uid';
+                              onPressed: () async {
+                                final authService =
+                                    context.read<AuthService?>();
+                                String uid = authService?.currentUid ?? '';
+                                if (uid.isEmpty && authService != null) {
+                                  try {
+                                    uid = await authService.getOrEnsureUid();
+                                  } catch (_) {}
+                                }
+                                if (!mounted) return;
                                 identityProvider.resolveIdentity(
                                   roomCode: widget.roomCode,
                                   uid: uid,

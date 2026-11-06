@@ -5,185 +5,148 @@ import '../../../../core/widgets/app_button.dart';
 
 class IdentityRevealScreen extends StatelessWidget {
   final String roomCode;
-  final String mockPersona;
+  final String adjective;
+  final String animal;
 
   const IdentityRevealScreen({
     super.key,
     required this.roomCode,
-    this.mockPersona = 'Neon Falcon',
+    this.adjective = 'Brave',
+    this.animal = 'Badger',
   });
+
+  String get fullUsername => '$adjective $animal';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12.0),
+          child: Center(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.secondarySurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderLight, width: 1),
+                ),
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: AppColors.primaryText,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+        ),
+        centerTitle: true,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Room #$roomCode',
+              style: const TextStyle(
+                color: AppColors.primaryText,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              '1 members',
+              style: TextStyle(
+                color: AppColors.secondaryText,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(flex: 1),
-
-              // Hero Persona Avatar
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primaryAccent,
-                    width: 2.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryAccent.withValues(alpha: 0.25),
-                      blurRadius: 30,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 46,
-                    color: AppColors.primaryAccent,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // Persona Header
-              const Text(
-                'YOU ARE JOINING AS',
-                style: TextStyle(
-                  color: AppColors.secondaryText,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                mockPersona,
-                style: const TextStyle(
-                  color: AppColors.primaryText,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.2,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 14),
-
-              // Room Code Chip
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.secondarySurface, width: 1.2),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.tag_rounded,
-                      size: 14,
-                      color: AppColors.primaryAccent,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Room #$roomCode',
-                      style: const TextStyle(
-                        color: AppColors.primaryAccent,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 36),
-
-              // Explanatory Persistence Card
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.borderLight, width: 1),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondarySurface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.shield_rounded,
-                        color: AppColors.primaryAccent,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Room-Scoped Persona',
-                            style: TextStyle(
-                              color: AppColors.primaryText,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'This identity is saved locally. If you leave and rejoin this room later, this persona will be restored.',
-                            style: TextStyle(
-                              color: AppColors.secondaryText,
-                              fontSize: 13,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
               const Spacer(flex: 2),
 
-              // Enter Chat CTA
+              // Prominent Identity Card matching Figma
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.secondarySurface,
+                    width: 1.2,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'For this room you are',
+                      style: TextStyle(
+                        color: AppColors.secondaryText,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Big 2-line Neon Lime Persona Name
+                    Text(
+                      '$adjective\n$animal',
+                      style: const TextStyle(
+                        color: AppColors.primaryAccent,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Privacy note inside card
+                    const Text(
+                      'This is your anonymous identity, visible only to users in this room.',
+                      style: TextStyle(
+                        color: AppColors.secondaryText,
+                        fontSize: 12,
+                        height: 1.45,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+              const Spacer(flex: 3),
+
+              // Figma CTA: "Acknowledge and continue"
               AppButton(
-                text: 'Enter Chat Room',
-                icon: Icons.chat_bubble_outline_rounded,
+                text: 'Acknowledge and continue',
                 onPressed: () {
                   Navigator.pushReplacementNamed(
                     context,
                     AppRoutes.chat,
                     arguments: ChatArgs(
                       roomCode: roomCode,
-                      username: mockPersona,
+                      username: fullUsername,
                     ),
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -191,4 +154,3 @@ class IdentityRevealScreen extends StatelessWidget {
     );
   }
 }
-

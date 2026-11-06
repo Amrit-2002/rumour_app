@@ -22,63 +22,82 @@ class RoomCodeInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          height: 64,
-          decoration: BoxDecoration(
-            color: AppColors.secondarySurface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: errorText != null
-                  ? AppColors.errorAccent
-                  : AppColors.borderLight,
-              width: 1.5,
-            ),
-          ),
+        Stack(
           alignment: Alignment.center,
-          child: TextField(
-            controller: controller,
-            enabled: enabled,
-            onChanged: onChanged,
-            onSubmitted: onSubmitted,
-            textAlign: TextAlign.center,
-            autofocus: false,
-            maxLength: 6,
-            buildCounter: (
-              BuildContext context, {
-              required int currentLength,
-              required bool isFocused,
-              required int? maxLength,
-            }) => null,
-            textCapitalization: TextCapitalization.characters,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
-              LengthLimitingTextInputFormatter(6),
-              _UpperCaseTextFormatter(),
-            ],
-            style: const TextStyle(
-              color: AppColors.primaryText,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 8.0,
-              fontFamily: 'monospace',
+          children: [
+            // Visual Slots Display matching Figma design
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller,
+              builder: (context, value, _) {
+                final currentText = value.text;
+                return Container(
+                  height: 62,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondarySurface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: errorText != null
+                          ? AppColors.errorAccent
+                          : AppColors.borderLight,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(6, (index) {
+                      final hasChar = index < currentText.length;
+                      final isCurrentFocus = index == currentText.length;
+                      final char = hasChar ? currentText[index] : '-';
+
+                      return SizedBox(
+                        width: 32,
+                        child: Text(
+                          char,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: hasChar
+                                ? AppColors.primaryAccent
+                                : (isCurrentFocus
+                                    ? AppColors.primaryText
+                                    : AppColors.secondaryText.withValues(alpha: 0.4)),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2.0,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                );
+              },
             ),
-            decoration: const InputDecoration(
-              hintText: '••••••',
-              hintStyle: TextStyle(
-                color: AppColors.secondaryText,
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 8.0,
+
+            // Invisible Full-Width TextField on top capturing taps & input
+            Opacity(
+              opacity: 0.0,
+              child: SizedBox(
+                height: 62,
+                child: TextField(
+                  controller: controller,
+                  enabled: enabled,
+                  autofocus: false,
+                  maxLength: 6,
+                  keyboardType: TextInputType.text,
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                    LengthLimitingTextInputFormatter(6),
+                    _UpperCaseTextFormatter(),
+                  ],
+                  onChanged: onChanged,
+                  onSubmitted: onSubmitted,
+                ),
               ),
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-              filled: false,
             ),
-          ),
+          ],
         ),
         if (errorText != null) ...[
           const SizedBox(height: 8),
@@ -109,4 +128,3 @@ class _UpperCaseTextFormatter extends TextInputFormatter {
     );
   }
 }
-

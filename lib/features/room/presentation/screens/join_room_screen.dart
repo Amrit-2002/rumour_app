@@ -42,8 +42,8 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     super.dispose();
   }
 
-  void _handleJoinRoom() {
-    final code = _codeController.text.trim().toUpperCase();
+  void _handleJoinRoom([String? customCode]) {
+    final code = (customCode ?? _codeController.text).trim().toUpperCase();
     if (code.length != AppConstants.roomCodeLength) {
       setState(() {
         _errorMessage = 'Please enter a 6-digit room code';
@@ -61,13 +61,11 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   void _handleCreateRoom() {
     setState(() => _isLoading = true);
 
-    // Mock room creation for Milestone 2 UI demonstration
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      // Deterministic sample mock room code
-      const mockCode = 'RM7K29';
+      const mockCode = '581290';
       Navigator.pushNamed(
         context,
         AppRoutes.identityReveal,
@@ -84,145 +82,90 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 40,
+                  minHeight: constraints.maxHeight - 48,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Spacer(),
-                      // Brand Icon Header
+
+                      // Figma Top Key Icon Badge
                       Center(
                         child: Container(
-                          width: 68,
-                          height: 68,
+                          width: 58,
+                          height: 58,
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(20),
+                            shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.primaryAccent.withValues(alpha: 0.3),
+                              color: AppColors.secondarySurface,
                               width: 1.5,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primaryAccent.withValues(alpha: 0.12),
-                                blurRadius: 24,
-                                spreadRadius: 2,
-                              ),
-                            ],
                           ),
                           child: const Icon(
-                            Icons.forum_rounded,
-                            size: 34,
+                            Icons.key_rounded,
+                            size: 28,
                             color: AppColors.primaryAccent,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
-                      // Brand Titles
+                      // Title matching Figma
                       const Text(
-                        AppConstants.appName,
+                        'Join A Room',
                         style: TextStyle(
                           color: AppColors.primaryText,
-                          fontSize: 34,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
+
+                      // Subtitle matching Figma
                       const Text(
-                        'Ephemeral anonymous group chat.\nNo sign-up. No tracking.',
+                        'Enter the code to join the anon chat room',
                         style: TextStyle(
                           color: AppColors.secondaryText,
                           fontSize: 14,
-                          height: 1.4,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 36),
 
-                      // Room Code Input Box
+                      // 6-digit Slot Input Box
                       RoomCodeInput(
                         controller: _codeController,
                         errorText: _errorMessage,
-                        onSubmitted: (_) {
-                          if (_isJoinEnabled) _handleJoinRoom();
+                        onSubmitted: (code) {
+                          if (code.length == AppConstants.roomCodeLength) {
+                            _handleJoinRoom(code);
+                          }
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
                       // Join Room CTA
                       AppButton(
                         text: 'Join Room',
-                        onPressed: _isJoinEnabled ? _handleJoinRoom : null,
+                        onPressed: _isJoinEnabled ? () => _handleJoinRoom() : null,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 18),
 
-                      // OR Divider
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: AppColors.borderLight,
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Text(
-                              'OR',
-                              style: TextStyle(
-                                color: AppColors.secondaryText,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: AppColors.borderLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Create Room Action
+                      // Create Room Secondary Action
                       AppButton.outline(
                         text: 'Create New Room',
                         isLoading: _isLoading,
-                        icon: Icons.add_rounded,
                         onPressed: _handleCreateRoom,
                       ),
-                      const Spacer(),
 
-                      // Footer Note
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.lock_outline_rounded,
-                            size: 14,
-                            color: AppColors.secondaryText.withValues(alpha: 0.7),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Identities are generated anonymously per room',
-                            style: TextStyle(
-                              color: AppColors.secondaryText.withValues(alpha: 0.7),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                      const Spacer(),
                     ],
                   ),
                 ),
@@ -234,4 +177,3 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     );
   }
 }
-

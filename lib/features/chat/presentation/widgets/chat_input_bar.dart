@@ -91,7 +91,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     fontSize: 15,
                   ),
                   decoration: const InputDecoration(
-                    hintText: 'Type a rumour...',
+                    hintText: 'Type a message...',
                     hintStyle: TextStyle(
                       color: AppColors.secondaryText,
                       fontSize: 14,
@@ -129,11 +129,11 @@ class _ChatInputBarState extends State<ChatInputBar> {
                         ),
                       )
                     : Icon(
-                        Icons.arrow_upward_rounded,
+                        Icons.near_me_rounded,
                         color: _canSend
                             ? AppColors.darkText
                             : AppColors.secondaryText,
-                        size: 22,
+                        size: 20,
                       ),
                 onPressed: _canSend && !widget.isSending ? _handleSend : null,
               ),

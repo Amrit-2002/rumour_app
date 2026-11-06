@@ -3,55 +3,58 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rumour/app.dart';
 
 void main() {
-  testWidgets('Full UI mock navigation walkthrough: Join -> Reveal -> Chat', (WidgetTester tester) async {
-    // 1. Build RumourApp and trigger a frame.
+  testWidgets('Exact Figma UI flow: Join A Room -> Reveal (Brave Badger) -> Chat', (WidgetTester tester) async {
+    // 1. Build RumourApp and trigger frame
     await tester.pumpWidget(const RumourApp());
     await tester.pumpAndSettle();
 
-    // Verify Join Room screen elements
-    expect(find.text('Rumour'), findsOneWidget);
+    // Verify Join A Room screen elements
+    expect(find.text('Join A Room'), findsOneWidget);
+    expect(find.text('Enter the code to join the anon chat room'), findsOneWidget);
     expect(find.text('Join Room'), findsOneWidget);
     expect(find.text('Create New Room'), findsOneWidget);
 
     // Enter a 6-digit room code
     final inputFinder = find.byType(TextField);
     expect(inputFinder, findsOneWidget);
-    await tester.enterText(inputFinder, 'ABC123');
-    await tester.pump();
+    await tester.enterText(inputFinder, '581290');
+    await tester.pumpAndSettle();
 
-    // Tap Join Room button
+    // Tap Join Room
     final joinButtonFinder = find.widgetWithText(ElevatedButton, 'Join Room');
     expect(joinButtonFinder, findsOneWidget);
     await tester.tap(joinButtonFinder);
     await tester.pumpAndSettle();
 
-    // 2. Verify Identity Reveal screen
-    expect(find.text('YOU ARE JOINING AS'), findsOneWidget);
-    expect(find.text('Neon Falcon'), findsOneWidget);
-    expect(find.text('Room #ABC123'), findsOneWidget);
-    expect(find.text('Enter Chat Room'), findsOneWidget);
+    // 2. Verify Identity Reveal screen (matching Figma)
+    expect(find.text('For this room you are'), findsOneWidget);
+    expect(find.text('Brave\nBadger'), findsOneWidget);
+    expect(find.text('Room #581290'), findsOneWidget);
+    expect(find.text('1 members'), findsOneWidget);
+    expect(find.text('Acknowledge and continue'), findsOneWidget);
 
-    // Tap Enter Chat Room
-    final enterChatFinder = find.widgetWithText(ElevatedButton, 'Enter Chat Room');
-    await tester.tap(enterChatFinder);
+    // Tap Acknowledge and continue
+    final acknowledgeFinder = find.widgetWithText(ElevatedButton, 'Acknowledge and continue');
+    await tester.tap(acknowledgeFinder);
     await tester.pumpAndSettle();
 
-    // 3. Verify Group Chat screen
-    expect(find.text('Room #ABC123'), findsOneWidget);
-    expect(find.text('as Neon Falcon'), findsOneWidget);
-    expect(find.text('Type a rumour...'), findsOneWidget);
+    // 3. Verify Group Chat screen (matching Figma)
+    expect(find.text('Room #581290'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Type a message...'), findsOneWidget);
+    expect(find.text('Hello! glad to join you guys. I have a few ideas'), findsOneWidget);
 
-    // Send a new message
-    final chatInputFinder = find.widgetWithText(TextField, 'Type a rumour...');
-    await tester.enterText(chatInputFinder, 'Hello from widget test!');
-    await tester.pump();
+    // Send a message
+    final chatInputFinder = find.widgetWithText(TextField, 'Type a message...');
+    await tester.enterText(chatInputFinder, 'Figma pixel fidelity verified!');
+    await tester.pumpAndSettle();
 
-    final sendButtonFinder = find.byIcon(Icons.arrow_upward_rounded);
+    final sendButtonFinder = find.byIcon(Icons.near_me_rounded);
     expect(sendButtonFinder, findsOneWidget);
     await tester.tap(sendButtonFinder);
     await tester.pumpAndSettle();
 
     // Verify message was appended to feed
-    expect(find.text('Hello from widget test!'), findsOneWidget);
+    expect(find.text('Figma pixel fidelity verified!'), findsOneWidget);
   });
 }

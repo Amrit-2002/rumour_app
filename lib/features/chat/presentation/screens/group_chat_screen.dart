@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/navigation.dart';
 import '../widgets/chat_bubble.dart';
@@ -43,42 +42,21 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Reversed list: index 0 is the newest message
+    // Reversed list matching Figma chat design
     _messages = [
-      _MockMessage(
-        id: '5',
-        senderName: widget.username,
-        text: "Testing out the new anonymous room! Let's share some rumours.",
-        time: 'Just now',
-        isMe: true,
-        isPending: true,
-      ),
-      const _MockMessage(
-        id: '4',
-        senderName: 'Cosmic Otter',
-        text: 'Welcome everyone! Identities are fully anonymous here.',
-        time: '19:32',
-        isMe: false,
-      ),
-      const _MockMessage(
-        id: '3',
-        senderName: 'Velvet Badger',
-        text: 'Did anyone test the offline sync yet?',
-        time: '19:30',
-        isMe: false,
-      ),
       _MockMessage(
         id: '2',
         senderName: widget.username,
-        text: 'Offline caching works automatically via Firestore persistence.',
-        time: '19:28',
+        text: 'Hello! glad to join you guys. I have a few ideas',
+        time: '10:15',
         isMe: true,
+        isPending: false,
       ),
       const _MockMessage(
         id: '1',
-        senderName: 'Silent Wolf',
-        text: 'Room created. Welcome to Rumour!',
-        time: '19:25',
+        senderName: 'Wild Panther',
+        text: 'Hi all! come to this room to discuss the project and suggest cool apps or anything with teams.',
+        time: '10:14',
         isMe: false,
       ),
     ];
@@ -92,21 +70,12 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           senderName: widget.username,
           text: text,
-          time: 'Just now',
+          time: '10:16',
           isMe: true,
+          isPending: false,
         ),
       );
     });
-  }
-
-  void _copyRoomCode() {
-    Clipboard.setData(ClipboardData(text: widget.roomCode));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Room code #${widget.roomCode} copied to clipboard!'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   void _confirmLeaveRoom() {
@@ -123,7 +92,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
           ),
         ),
         content: Text(
-          'You can re-enter room #${widget.roomCode} anytime using this code. Your persona (${widget.username}) will be saved on this device.',
+          'You can re-enter room #${widget.roomCode} anytime. Your identity (${widget.username}) is preserved on this device.',
           style: const TextStyle(
             color: AppColors.secondaryText,
             fontSize: 14,
@@ -145,7 +114,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               minimumSize: const Size(90, 40),
             ),
             onPressed: () {
-              Navigator.pop(dialogContext); // Close dialog
+              Navigator.pop(dialogContext);
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 AppRoutes.joinRoom,
@@ -164,81 +133,105 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        titleSpacing: 0,
-        title: InkWell(
-          onTap: _copyRoomCode,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Room #${widget.roomCode}',
-                      style: const TextStyle(
-                        color: AppColors.primaryText,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.copy_rounded,
-                      size: 14,
-                      color: AppColors.primaryAccent,
-                    ),
-                  ],
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12.0),
+          child: Center(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: _confirmLeaveRoom,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.secondarySurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderLight, width: 1),
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryAccent,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'as ${widget.username}',
-                      style: const TextStyle(
-                        color: AppColors.secondaryText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: AppColors.primaryText,
+                  size: 24,
                 ),
-              ],
+              ),
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Leave Room',
-            icon: const Icon(
-              Icons.logout_rounded,
-              color: AppColors.secondaryText,
-              size: 22,
+        centerTitle: true,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Room #${widget.roomCode}',
+              style: const TextStyle(
+                color: AppColors.primaryText,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            onPressed: _confirmLeaveRoom,
+            const SizedBox(height: 2),
+            const Text(
+              '1 members',
+              style: TextStyle(
+                color: AppColors.secondaryText,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Center(
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.secondarySurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderLight, width: 1),
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.more_vert_rounded,
+                    color: AppColors.primaryText,
+                    size: 20,
+                  ),
+                  onPressed: _confirmLeaveRoom,
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Chat message feed
+          // Centered Date Chip matching Figma ("Today")
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
+              decoration: BoxDecoration(
+                color: AppColors.secondarySurface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Today',
+                style: TextStyle(
+                  color: AppColors.secondaryText,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+
+          // Message feed
           Expanded(
             child: ListView.builder(
               reverse: true,
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final message = _messages[index];
@@ -253,7 +246,7 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
             ),
           ),
 
-          // Pinned bottom input bar
+          // Pinned bottom input bar matching Figma
           ChatInputBar(
             onSend: _handleSendMessage,
           ),
@@ -262,4 +255,3 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
     );
   }
 }
-

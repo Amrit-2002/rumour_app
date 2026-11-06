@@ -5,6 +5,9 @@ import 'app.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/firestore_service.dart';
 import 'core/services/storage_service.dart';
+import 'features/room/data/repositories/room_repository_impl.dart';
+import 'features/room/domain/repositories/room_repository.dart';
+import 'features/room/presentation/providers/room_provider.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -33,6 +36,13 @@ void main() async {
       providers: [
         Provider<StorageService>.value(value: storageService),
         Provider<AuthService>.value(value: authService),
+        Provider<RoomRepository>(
+          create: (_) => RoomRepositoryImpl(),
+        ),
+        ChangeNotifierProxyProvider<RoomRepository, RoomProvider>(
+          create: (context) => RoomProvider(context.read<RoomRepository>()),
+          update: (_, repo, prev) => prev ?? RoomProvider(repo),
+        ),
       ],
       child: const RumourApp(),
     ),

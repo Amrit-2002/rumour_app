@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../providers/room_provider.dart';
 import '../widgets/room_code_input.dart';
 
 class JoinRoomScreen extends StatefulWidget {
@@ -15,8 +18,7 @@ class JoinRoomScreen extends StatefulWidget {
 class _JoinRoomScreenState extends State<JoinRoomScreen> {
   final TextEditingController _codeController = TextEditingController();
   bool _isJoinEnabled = false;
-  bool _isLoading = false;
-  String? _errorMessage;
+  String? _localError;
 
   @override
   void initState() {
@@ -27,11 +29,12 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   void _onCodeChanged() {
     final text = _codeController.text.trim();
     final bool canJoin = text.length == AppConstants.roomCodeLength;
-    if (_isJoinEnabled != canJoin || _errorMessage != null) {
+    if (_isJoinEnabled != canJoin || _localError != null) {
       setState(() {
         _isJoinEnabled = canJoin;
-        _errorMessage = null;
+        _localError = null;
       });
+      context.read<RoomProvider?>()?.clearError();
     }
   }
 
@@ -42,40 +45,79 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     super.dispose();
   }
 
-  void _handleJoinRoom([String? customCode]) {
+  Future<void> _handleJoinRoom([String? customCode]) async {
     final code = (customCode ?? _codeController.text).trim().toUpperCase();
     if (code.length != AppConstants.roomCodeLength) {
       setState(() {
-        _errorMessage = 'Please enter a 6-digit room code';
+        _localError = 'Please enter a 6-digit room code';
       });
       return;
     }
 
-    Navigator.pushNamed(
-      context,
-      AppRoutes.identityReveal,
-      arguments: IdentityRevealArgs(roomCode: code),
-    );
-  }
-
-  void _handleCreateRoom() {
-    setState(() => _isLoading = true);
-
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-
-      const mockCode = '581290';
+    final roomProvider = context.read<RoomProvider?>();
+    if (roomProvider == null) {
+      // Fallback for tests without Provider tree
       Navigator.pushNamed(
         context,
         AppRoutes.identityReveal,
-        arguments: const IdentityRevealArgs(roomCode: mockCode),
+        arguments: IdentityRevealArgs(roomCode: code),
       );
-    });
+      return;
+    }
+
+    final success = await roomProvider.joinRoom(code);
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.identityReveal,
+        arguments: IdentityRevealArgs(roomCode: code),
+      );
+    }
+  }
+
+  Future<void> _handleCreateRoom() async {
+    final roomProvider = context.read<RoomProvider?>();
+    final authService = context.read<AuthService?>();
+
+    if (roomProvider == null) {
+      // Fallback for tests without Provider tree
+      Navigator.pushNamed(
+        context,
+        AppRoutes.identityReveal,
+        arguments: const IdentityRevealArgs(roomCode: '581290'),
+      );
+      return;
+    }
+
+    String uid = authService?.currentUid ?? '';
+    if (uid.isEmpty) {
+      try {
+        uid = await authService?.ensureAnonymousAuth() ?? 'anonymous';
+      } catch (_) {
+        uid = 'anonymous';
+      }
+    }
+
+    final code = await roomProvider.createRoom(uid);
+    if (!mounted) return;
+
+    if (code != null) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.identityReveal,
+        arguments: IdentityRevealArgs(roomCode: code),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final roomProvider = context.watch<RoomProvider?>();
+    final isLoading = roomProvider?.isLoading ?? false;
+    final errorMessage = _localError ?? roomProvider?.errorMessage;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -142,9 +184,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                       // 6-digit Slot Input Box
                       RoomCodeInput(
                         controller: _codeController,
-                        errorText: _errorMessage,
+                        enabled: !isLoading,
+                        errorText: errorMessage,
                         onSubmitted: (code) {
-                          if (code.length == AppConstants.roomCodeLength) {
+                          if (code.length == AppConstants.roomCodeLength && !isLoading) {
                             _handleJoinRoom(code);
                           }
                         },
@@ -154,15 +197,18 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                       // Join Room CTA
                       AppButton(
                         text: 'Join Room',
-                        onPressed: _isJoinEnabled ? () => _handleJoinRoom() : null,
+                        isLoading: isLoading,
+                        onPressed: (_isJoinEnabled && !isLoading)
+                            ? () => _handleJoinRoom()
+                            : null,
                       ),
                       const SizedBox(height: 18),
 
                       // Create Room Secondary Action
                       AppButton.outline(
                         text: 'Create New Room',
-                        isLoading: _isLoading,
-                        onPressed: _handleCreateRoom,
+                        isLoading: isLoading,
+                        onPressed: isLoading ? null : _handleCreateRoom,
                       ),
 
                       const Spacer(),

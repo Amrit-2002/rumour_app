@@ -20,3 +20,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'rumour-5f0f6.firebasestorage.app',
   );
 }
+

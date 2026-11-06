@@ -21,3 +21,4 @@ class StorageService {
 
   Future<bool> clear() => _prefs.clear();
 }
+

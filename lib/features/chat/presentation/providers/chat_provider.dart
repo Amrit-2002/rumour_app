@@ -15,6 +15,7 @@ class ChatProvider extends ChangeNotifier {
   bool _isSending = false;
   bool _isLoadingMore = false;
   bool _hasMore = true;
+  bool _isFromCache = false;
   String? _errorMessage;
   String? _activeRoomCode;
   dynamic _lastDocumentCursor;
@@ -25,6 +26,8 @@ class ChatProvider extends ChangeNotifier {
   bool get isSending => _isSending;
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMore => _hasMore;
+  bool get isFromCache => _isFromCache;
+  bool get hasPendingWrites => _messages.any((m) => m.isPending);
   String? get errorMessage => _errorMessage;
   String? get activeRoomCode => _activeRoomCode;
 
@@ -62,6 +65,7 @@ class ChatProvider extends ChangeNotifier {
           if (snapshot.docs.isNotEmpty) {
             _lastDocumentCursor = snapshot.docs.last;
           }
+          _isFromCache = snapshot.metadata.isFromCache;
           _mergeMessages(streamMessages);
           _isLoading = false;
           _errorMessage = null;
@@ -171,6 +175,7 @@ class ChatProvider extends ChangeNotifier {
     _lastDocumentCursor = null;
     _isLoadingMore = false;
     _hasMore = true;
+    _isFromCache = false;
     _errorMessage = null;
   }
 

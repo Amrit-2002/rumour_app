@@ -9,6 +9,7 @@ import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/date_separator_chip.dart';
+import '../widgets/offline_banner.dart';
 
 class GroupChatScreen extends StatefulWidget {
   final String roomCode;
@@ -244,6 +245,11 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ),
       body: Column(
         children: [
+          // Offline status banner if reading from cache or writes are queued
+          if (chatProvider?.isFromCache == true ||
+              chatProvider?.hasPendingWrites == true)
+            const OfflineBanner(),
+
           // Error banner if any
           if (errorMessage != null)
             Container(

@@ -18,3 +18,4 @@ class RoomCodeGenerator {
     return buffer.toString();
   }
 }
+

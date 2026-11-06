@@ -37,6 +37,12 @@ class RoomRepositoryImpl implements RoomRepository {
 
       return roomCode;
     } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw const ServerException(
+          'Permission denied. Enable Anonymous Auth & update Firestore Rules in Firebase Console.',
+          'permission-denied',
+        );
+      }
       throw ServerException(
         e.message ?? 'Failed to create room in Firestore.',
         e.code,
@@ -56,6 +62,12 @@ class RoomRepositoryImpl implements RoomRepository {
       }
       return RoomModel.fromFirestore(doc);
     } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw const ServerException(
+          'Permission denied. Enable Anonymous Auth & update Firestore Rules in Firebase Console.',
+          'permission-denied',
+        );
+      }
       throw ServerException(
         e.message ?? 'Failed to retrieve room.',
         e.code,
@@ -74,6 +86,12 @@ class RoomRepositoryImpl implements RoomRepository {
       final data = doc.data();
       return (data?['isActive'] as bool? ?? true);
     } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw const ServerException(
+          'Permission denied. Enable Anonymous Auth & update Firestore Rules in Firebase Console.',
+          'permission-denied',
+        );
+      }
       throw ServerException(
         e.message ?? 'Failed to validate room.',
         e.code,
@@ -84,3 +102,4 @@ class RoomRepositoryImpl implements RoomRepository {
     }
   }
 }
+

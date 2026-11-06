@@ -12,3 +12,4 @@ abstract class RoomRepository {
   /// Checks if a room document exists in Firestore and is active.
   Future<bool> validateRoom(String roomCode);
 }
+

@@ -60,12 +60,14 @@ class RandomUserRemoteDataSourceImpl implements RandomUserRemoteDataSource {
   @override
   Future<RandomUserDto> fetchRandomUser() async {
     try {
-      final response = await _client.get(
-        Uri.parse(endpoint),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
+      final response = await _client
+          .get(
+            Uri.parse(endpoint),
+            headers: {
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> decoded =

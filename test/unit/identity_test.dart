@@ -1,20 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rumour/features/identity/domain/models/identity_model.dart';
-import 'package:rumour/features/identity/domain/services/identity_generator.dart';
 
 void main() {
-  group('IdentityGenerator', () {
-    test('generate() returns valid Adjective and Animal from curated lists', () {
-      for (int i = 0; i < 50; i++) {
-        final persona = IdentityGenerator.generate();
-        expect(IdentityGenerator.adjectives.contains(persona.adjective), isTrue,
-            reason: 'Adjective ${persona.adjective} must be in curated list');
-        expect(IdentityGenerator.animals.contains(persona.animal), isTrue,
-            reason: 'Animal ${persona.animal} must be in curated list');
-        expect(persona.fullName, equals('${persona.adjective} ${persona.animal}'));
-      }
-    });
-  });
 
   group('IdentityModel', () {
     test('toJson and fromJson preserves all fields and restored status', () {

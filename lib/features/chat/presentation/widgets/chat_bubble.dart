@@ -22,39 +22,36 @@ class ChatBubble extends StatelessWidget {
     final maxWidth = MediaQuery.of(context).size.width * 0.78;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          // Label above bubble matching Figma ("You" or "@SenderName")
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4.0, left: 4.0, right: 4.0),
-            child: Text(
-              isMe ? 'You' : '@$senderName',
-              style: const TextStyle(
-                color: AppColors.secondaryText,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            // Label above bubble matching Figma ("You" or "@SenderName")
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4.0, left: 4.0, right: 4.0),
+              child: Text(
+                isMe ? 'You' : '@$senderName',
+                style: const TextStyle(
+                  color: AppColors.secondaryText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-
+      
           // Message Container
           Container(
             constraints: BoxConstraints(maxWidth: maxWidth),
             padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
             decoration: BoxDecoration(
-              color: isMe ? AppColors.primaryAccent : AppColors.surface,
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(16),
-                topRight: const Radius.circular(16),
-                bottomLeft: Radius.circular(isMe ? 16 : 4),
-                bottomRight: Radius.circular(isMe ? 4 : 16),
-              ),
+              color: isMe ? AppColors.bubbleSent : AppColors.bubbleReceived,
+              borderRadius: BorderRadius.circular(16),
               border: isMe
                   ? null
-                  : Border.all(color: AppColors.secondarySurface, width: 1.0),
+                  : Border.all(color: AppColors.borderLight, width: 0.8),
             ),
             child: Wrap(
               alignment: WrapAlignment.end,
@@ -80,7 +77,7 @@ class ChatBubble extends StatelessWidget {
                         time,
                         style: TextStyle(
                           color: isMe
-                              ? AppColors.darkText.withValues(alpha: 0.6)
+                              ? AppColors.darkText.withValues(alpha: 0.65)
                               : AppColors.secondaryText,
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
@@ -94,7 +91,7 @@ class ChatBubble extends StatelessWidget {
                               : Icons.done_all_rounded,
                           size: 11,
                           color: isPending
-                              ? AppColors.darkText.withValues(alpha: 0.6)
+                              ? AppColors.darkText.withValues(alpha: 0.65)
                               : AppColors.darkText,
                         ),
                       ],
@@ -106,6 +103,7 @@ class ChatBubble extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

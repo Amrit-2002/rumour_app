@@ -33,7 +33,7 @@ class RoomCodeInput extends StatelessWidget {
               builder: (context, value, _) {
                 final currentText = value.text;
                 return Container(
-                  height: 62,
+                  height: 60,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: AppColors.secondarySurface,
@@ -50,23 +50,31 @@ class RoomCodeInput extends StatelessWidget {
                     children: List.generate(6, (index) {
                       final hasChar = index < currentText.length;
                       final isCurrentFocus = index == currentText.length;
-                      final char = hasChar ? currentText[index] : '-';
 
                       return SizedBox(
                         width: 32,
-                        child: Text(
-                          char,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: hasChar
-                                ? AppColors.primaryAccent
-                                : (isCurrentFocus
-                                    ? AppColors.primaryText
-                                    : AppColors.secondaryText.withValues(alpha: 0.4)),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 2.0,
-                          ),
+                        height: 60,
+                        child: Center(
+                          child: hasChar
+                              ? Text(
+                                  currentText[index],
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: AppColors.primaryAccent,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                )
+                              : Container(
+                                  width: 16,
+                                  height: 3.5,
+                                  decoration: BoxDecoration(
+                                    color: isCurrentFocus
+                                        ? AppColors.primaryText
+                                        : AppColors.secondaryText.withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
                         ),
                       );
                     }),

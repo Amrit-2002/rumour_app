@@ -99,6 +99,22 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
             ),
           ],
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Center(
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.secondarySurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderLight, width: 1),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -106,25 +122,25 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(flex: 2),
+              const Spacer(flex:5),
 
               // Prominent Identity Card matching Figma
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.cardSurface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppColors.secondarySurface,
-                    width: 1.2,
+                    color: AppColors.borderLight,
+                    width: 1.0,
                   ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      isRestored ? 'Welcome back! For this room you are' : 'For this room you are',
+                      isRestored ? 'Welcome back! For this room, you are' : 'For this room, you are',
                       style: const TextStyle(
                         color: AppColors.secondaryText,
                         fontSize: 13,
@@ -147,7 +163,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                         '$adjective\n$animal',
                         style: const TextStyle(
                           color: AppColors.primaryAccent,
-                          fontSize: 34,
+                          fontSize: 38,
                           fontWeight: FontWeight.w900,
                           height: 1.15,
                           letterSpacing: -0.5,
@@ -156,23 +172,26 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                       ),
                     const SizedBox(height: 24),
 
-                    // Privacy note inside card
-                    Text(
-                      isRestored
-                          ? 'Your previous anonymous identity for this room was restored from this device.'
-                          : 'This is your anonymous identity, visible only to users in this room.',
-                      style: const TextStyle(
-                        color: AppColors.secondaryText,
-                        fontSize: 12,
-                        height: 1.45,
+                    // Privacy note inside card matching Figma exactly
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 260),
+                      child: Text(
+                        isRestored
+                            ? 'Your previous anonymous identifier for this room was restored from this device.'
+                            : 'This is your anonymous identifier, visible only to others in this room.',
+                        style: const TextStyle(
+                          color: AppColors.secondaryText,
+                          fontSize: 12,
+                          height: 1.45,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
 
-              const Spacer(flex: 3),
+              const Spacer(flex: 1),
 
               // Figma CTA: "Acknowledge and continue"
               AppButton(

@@ -52,12 +52,9 @@ class _ChatInputBarState extends State<ChatInputBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.secondarySurface, width: 1.0),
-        ),
+        color: AppColors.background,
       ),
       child: SafeArea(
         top: false,
@@ -68,14 +65,14 @@ class _ChatInputBarState extends State<ChatInputBar> {
               child: Container(
                 constraints: const BoxConstraints(maxHeight: 120),
                 decoration: BoxDecoration(
-                  color: AppColors.secondarySurface,
-                  borderRadius: BorderRadius.circular(22),
+                  color: AppColors.cardSurface,
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(
                     color: AppColors.borderLight,
-                    width: 1.0,
+                    width: 0.8,
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
                 child: TextField(
                   controller: _textController,
                   maxLines: null,
@@ -100,7 +97,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 10.0),
+                    contentPadding: EdgeInsets.symmetric(vertical: 12.0),
                     isDense: true,
                     filled: false,
                   ),
@@ -108,35 +105,33 @@ class _ChatInputBarState extends State<ChatInputBar> {
               ),
             ),
             const SizedBox(width: 10),
-            Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: _canSend && !widget.isSending
-                    ? AppColors.primaryAccent
-                    : AppColors.secondarySurface,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: widget.isSending
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.darkText,
+            GestureDetector(
+              onTap: _canSend && !widget.isSending ? _handleSend : null,
+              child: Container(
+                height: 44,
+                width: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryAccent,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: widget.isSending
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.darkText,
+                            ),
                           ),
+                        )
+                      : const Icon(
+                          Icons.near_me_rounded,
+                          color: AppColors.darkText,
+                          size: 20,
                         ),
-                      )
-                    : Icon(
-                        Icons.near_me_rounded,
-                        color: _canSend
-                            ? AppColors.darkText
-                            : AppColors.secondaryText,
-                        size: 20,
-                      ),
-                onPressed: _canSend && !widget.isSending ? _handleSend : null,
+                ),
               ),
             ),
           ],

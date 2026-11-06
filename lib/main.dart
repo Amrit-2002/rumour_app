@@ -8,6 +8,7 @@ import 'core/services/storage_service.dart';
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/repositories/chat_repository.dart';
 import 'features/chat/presentation/providers/chat_provider.dart';
+import 'features/identity/data/datasources/random_user_remote_datasource.dart';
 import 'features/identity/data/repositories/identity_repository_impl.dart';
 import 'features/identity/domain/repositories/identity_repository.dart';
 import 'features/identity/presentation/providers/identity_provider.dart';
@@ -49,9 +50,13 @@ void main() async {
           create: (context) => RoomProvider(context.read<RoomRepository>()),
           update: (_, repo, prev) => prev ?? RoomProvider(repo),
         ),
+        Provider<RandomUserRemoteDataSource>(
+          create: (_) => RandomUserRemoteDataSource(),
+        ),
         Provider<IdentityRepository>(
           create: (context) => IdentityRepositoryImpl(
             context.read<StorageService>(),
+            remoteDataSource: context.read<RandomUserRemoteDataSource>(),
           ),
         ),
         ChangeNotifierProxyProvider<IdentityRepository, IdentityProvider>(

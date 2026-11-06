@@ -27,7 +27,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 2. Verify Identity Reveal screen (matching Figma)
-    expect(find.text('For this room you are'), findsOneWidget);
+    expect(find.text('For this room, you are'), findsOneWidget);
     expect(find.text('Brave\nBadger'), findsOneWidget);
     expect(find.text('Room #581290'), findsOneWidget);
     expect(find.text('1 members'), findsOneWidget);
@@ -42,7 +42,7 @@ void main() {
     expect(find.text('Room #581290'), findsOneWidget);
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('Type a message...'), findsOneWidget);
-    expect(find.text('Hello! glad to join you guys. I have a few ideas'), findsOneWidget);
+    expect(find.text('Hi all! I came to visit your city for the weekend. Suggest coffee shop for breakfast with family.'), findsOneWidget);
 
     // Send a message
     final chatInputFinder = find.widgetWithText(TextField, 'Type a message...');

@@ -12,7 +12,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.key_rounded), findsOneWidget);
+      expect(find.byKey(const Key('app_logo_badge')), findsOneWidget);
       expect(find.text('Join A Room'), findsOneWidget);
       expect(find.text('Enter the code to join the anon chat room'),
           findsOneWidget);

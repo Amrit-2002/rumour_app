@@ -36,8 +36,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       MessageModel(
         id: '1',
         senderId: 'sample_other',
-        senderName: 'Wild Panther',
-        text: 'Hello! glad to join you guys. I have a few ideas',
+        senderName: 'PinkPanthress',
+        text: 'Hi all! I came to visit your city for the weekend. Suggest coffee shop for breakfast with family.',
         createdAt: DateTime.now(),
       ),
     ];

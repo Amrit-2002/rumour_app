@@ -6,6 +6,7 @@ import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/input_validator.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_key_logo.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_code_input.dart';
 
@@ -138,23 +139,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                       const Spacer(),
 
                       // Figma Top Key Icon Badge
-                      Center(
-                        child: Container(
-                          width: 58,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.secondarySurface,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.key_rounded,
-                            size: 28,
-                            color: AppColors.primaryAccent,
-                          ),
+                      const Center(
+                        child: AppKeyLogo(
+                          key: Key('app_logo_badge'),
+                          size: 58,
                         ),
                       ),
                       const SizedBox(height: 32),

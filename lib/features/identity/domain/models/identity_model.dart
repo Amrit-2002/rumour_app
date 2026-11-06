@@ -18,6 +18,8 @@ class IdentityModel {
   });
 
   String get fullName => '$adjective $animal';
+  String get firstName => adjective;
+  String get lastName => animal;
 
   IdentityModel copyWith({
     String? adjective,

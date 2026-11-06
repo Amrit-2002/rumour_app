@@ -2,12 +2,16 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../domain/models/identity_model.dart';
 import '../../domain/repositories/identity_repository.dart';
-import '../../domain/services/identity_generator.dart';
+import '../datasources/random_user_remote_datasource.dart';
 
 class IdentityRepositoryImpl implements IdentityRepository {
   final StorageService _storageService;
+  final RandomUserRemoteDataSource _remoteDataSource;
 
-  IdentityRepositoryImpl(this._storageService);
+  IdentityRepositoryImpl(
+    this._storageService, {
+    RandomUserRemoteDataSource? remoteDataSource,
+  }) : _remoteDataSource = remoteDataSource ?? RandomUserRemoteDataSource();
 
   String _getKey(String roomCode) =>
       '${AppConstants.prefRoomIdentityPrefix}${roomCode.toUpperCase()}';
@@ -29,20 +33,31 @@ class IdentityRepositoryImpl implements IdentityRepository {
     required String uid,
   }) async {
     final code = roomCode.toUpperCase();
+
+    // 1. Check whether the room identity exists locally.
     final existing = await getStoredIdentity(code);
     if (existing != null) {
-      // Update UID if it changed (e.g. fresh anonymous token)
+      // 2. If it exists, reuse it without making an API request.
       final updated = existing.copyWith(uid: uid, isRestored: true);
       await saveIdentity(updated);
       await _storageService.setString(AppConstants.prefLastActiveRoom, code);
       return updated;
     }
 
-    // Generate fresh persona
-    final persona = IdentityGenerator.generate();
+    // 3. Otherwise, call RandomUser API.
+    final randomUser = await _remoteDataSource.fetchRandomUser();
+
+    // 4. Convert the API response into the required anonymous username format.
+    final firstWord = _formatWord(randomUser.firstName);
+    final secondWord = _formatWord(randomUser.lastName);
+    if (firstWord.isEmpty || secondWord.isEmpty) {
+      throw const FormatException('Empty names received from RandomUser API');
+    }
+
+    // 5. Save the identity locally.
     final newIdentity = IdentityModel(
-      adjective: persona.adjective,
-      animal: persona.animal,
+      adjective: firstWord,
+      animal: secondWord,
       roomCode: code,
       uid: uid,
       assignedAt: DateTime.now(),
@@ -51,7 +66,15 @@ class IdentityRepositoryImpl implements IdentityRepository {
 
     await saveIdentity(newIdentity);
     await _storageService.setString(AppConstants.prefLastActiveRoom, code);
+
+    // 6. Return identity to display.
     return newIdentity;
+  }
+
+  static String _formatWord(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return '';
+    return trimmed[0].toUpperCase() + trimmed.substring(1);
   }
 
   @override
@@ -67,4 +90,3 @@ class IdentityRepositoryImpl implements IdentityRepository {
     await _storageService.remove(_getKey(roomCode));
   }
 }
-

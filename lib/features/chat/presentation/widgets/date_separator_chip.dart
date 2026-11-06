@@ -20,11 +20,11 @@ class DateSeparatorChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
           decoration: BoxDecoration(
-            color: AppColors.secondarySurface,
+            color: AppColors.dateChipBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: AppColors.borderLight,
-              width: 1.0,
+              width: 0.8,
             ),
           ),
           child: Text(

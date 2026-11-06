@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../room/presentation/providers/room_provider.dart';
 import '../providers/identity_provider.dart';
 
 class IdentityRevealScreen extends StatefulWidget {
@@ -42,6 +43,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
   @override
   Widget build(BuildContext context) {
     final identityProvider = context.watch<IdentityProvider?>();
+    final roomProvider = context.watch<RoomProvider?>();
     final identity = identityProvider?.currentIdentity;
     final isLoading = identityProvider?.isLoading ?? false;
 
@@ -49,6 +51,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
     final animal = identity?.animal ?? widget.initialAnimal ?? 'Badger';
     final isRestored = identity?.isRestored ?? false;
     final fullUsername = '$adjective $animal';
+    final memberCount = roomProvider?.activeRoom?.memberCount ?? 1;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -89,9 +92,9 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
               ),
             ),
             const SizedBox(height: 2),
-            const Text(
-              '1 members',
-              style: TextStyle(
+            Text(
+              '$memberCount members',
+              style: const TextStyle(
                 color: AppColors.secondaryText,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -158,6 +161,39 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                           color: AppColors.primaryAccent,
                         ),
                       )
+                    else if (identityProvider?.errorMessage != null && identity == null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              identityProvider!.errorMessage!,
+                              style: const TextStyle(
+                                color: AppColors.errorAccent,
+                                fontSize: 13,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton.icon(
+                              onPressed: () {
+                                final authService = context.read<AuthService?>();
+                                final uid = authService?.currentUid ?? 'device_uid';
+                                identityProvider.resolveIdentity(
+                                  roomCode: widget.roomCode,
+                                  uid: uid,
+                                );
+                              },
+                              icon: const Icon(Icons.refresh_rounded, size: 16),
+                              label: const Text('Retry'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primaryAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                     else
                       Text(
                         '$adjective\n$animal',
@@ -197,7 +233,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
               AppButton(
                 text: 'Acknowledge and continue',
                 isLoading: isLoading,
-                onPressed: isLoading
+                onPressed: (isLoading || (identityProvider?.errorMessage != null && identity == null))
                     ? null
                     : () {
                         Navigator.pushReplacementNamed(

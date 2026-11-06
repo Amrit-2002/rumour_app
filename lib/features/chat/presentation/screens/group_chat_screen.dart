@@ -207,9 +207,9 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
               ),
             ),
             const SizedBox(height: 2),
-            const Text(
-              '1 members',
-              style: TextStyle(
+            Text(
+              '${chatProvider?.memberCount ?? 1} members',
+              style: const TextStyle(
                 color: AppColors.secondaryText,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
@@ -245,9 +245,8 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
       ),
       body: Column(
         children: [
-          // Offline status banner if reading from cache or writes are queued
-          if (chatProvider?.isFromCache == true ||
-              chatProvider?.hasPendingWrites == true)
+          // Offline status banner when reading from cache
+          if (chatProvider?.isFromCache == true)
             const OfflineBanner(),
 
           // Error banner if any

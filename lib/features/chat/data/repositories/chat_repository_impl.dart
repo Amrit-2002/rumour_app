@@ -43,6 +43,27 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
+  Stream<int> getMemberCountStream(String roomCode) {
+    final code = roomCode.toUpperCase();
+    final roomDoc = _firestore.collection('rooms').doc(code);
+
+    return roomDoc
+        .collection('members')
+        .snapshots(includeMetadataChanges: true)
+        .asyncMap((membersSnap) async {
+      if (membersSnap.docs.isNotEmpty) {
+        return membersSnap.docs.length;
+      }
+      try {
+        final doc = await roomDoc.get();
+        final count = (doc.data()?['memberCount'] as num?)?.toInt();
+        if (count != null && count > 0) return count;
+      } catch (_) {}
+      return 1;
+    }).handleError((_) => 1);
+  }
+
+  @override
   Future<List<MessageModel>> fetchOlderMessages({
     required String roomCode,
     required dynamic lastDocument,

@@ -4,6 +4,9 @@ abstract class ChatRepository {
   /// Real-time stream of messages for a room, ordered newest first (descending).
   Stream<List<MessageModel>> getMessagesStream(String roomCode);
 
+  /// Real-time stream of the member count for a room.
+  Stream<int> getMemberCountStream(String roomCode);
+
   /// Sends a message into the room's messages subcollection.
   Future<void> sendMessage({
     required String roomCode,

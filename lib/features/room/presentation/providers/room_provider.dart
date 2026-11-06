@@ -34,6 +34,9 @@ class RoomProvider extends ChangeNotifier {
     try {
       final code = await _roomRepository.createRoom(uid: uid);
       _activeRoomCode = code;
+      try {
+        _activeRoom = await _roomRepository.getRoom(code);
+      } catch (_) {}
       _isLoading = false;
       notifyListeners();
       return code;
@@ -52,18 +55,24 @@ class RoomProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final exists = await _roomRepository.validateRoom(roomCode);
-      if (!exists) {
-        _errorMessage = 'Room not found. Please check your code or create a new room.';
+      final room = await _roomRepository.getRoom(roomCode);
+      if (!room.isActive) {
+        _errorMessage = 'Room is no longer active.';
         _isLoading = false;
         notifyListeners();
         return false;
       }
 
+      _activeRoom = room;
       _activeRoomCode = roomCode.toUpperCase();
       _isLoading = false;
       notifyListeners();
       return true;
+    } on RoomNotFoundException {
+      _errorMessage = 'Room not found. Please check your code or create a new room.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
     } catch (e) {
       _isLoading = false;
       _errorMessage = e is AppException ? e.message : 'Error validating room: $e';

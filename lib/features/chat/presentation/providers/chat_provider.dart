@@ -20,6 +20,8 @@ class ChatProvider extends ChangeNotifier {
   String? _activeRoomCode;
   dynamic _lastDocumentCursor;
   StreamSubscription? _messagesSubscription;
+  StreamSubscription<int>? _memberCountSubscription;
+  int _memberCount = 1;
 
   List<MessageModel> get messages => _messages;
   bool get isLoading => _isLoading;
@@ -30,6 +32,7 @@ class ChatProvider extends ChangeNotifier {
   bool get hasPendingWrites => _messages.any((m) => m.isPending);
   String? get errorMessage => _errorMessage;
   String? get activeRoomCode => _activeRoomCode;
+  int get memberCount => _memberCount;
 
   /// Connects to real-time message stream for the specified room.
   void enterRoom({
@@ -53,6 +56,20 @@ class ChatProvider extends ChangeNotifier {
       roomCode: roomCode,
       uid: uid,
       username: username,
+    );
+
+    // Subscribe to real-time member count
+    _memberCountSubscription?.cancel();
+    _memberCountSubscription = _chatRepository
+        .getMemberCountStream(roomCode)
+        .listen(
+      (count) {
+        if (_memberCount != count) {
+          _memberCount = count;
+          notifyListeners();
+        }
+      },
+      onError: (_) {},
     );
 
     // Subscribe to Firestore stream
@@ -170,6 +187,9 @@ class ChatProvider extends ChangeNotifier {
   void _leaveRoomInternal() {
     _messagesSubscription?.cancel();
     _messagesSubscription = null;
+    _memberCountSubscription?.cancel();
+    _memberCountSubscription = null;
+    _memberCount = 1;
     _messages = [];
     _activeRoomCode = null;
     _lastDocumentCursor = null;
@@ -189,6 +209,8 @@ class ChatProvider extends ChangeNotifier {
   void dispose() {
     _messagesSubscription?.cancel();
     _messagesSubscription = null;
+    _memberCountSubscription?.cancel();
+    _memberCountSubscription = null;
     super.dispose();
   }
 }

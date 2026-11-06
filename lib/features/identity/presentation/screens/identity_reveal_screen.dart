@@ -1,24 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../providers/identity_provider.dart';
 
-class IdentityRevealScreen extends StatelessWidget {
+class IdentityRevealScreen extends StatefulWidget {
   final String roomCode;
-  final String adjective;
-  final String animal;
+  final String? initialAdjective;
+  final String? initialAnimal;
 
   const IdentityRevealScreen({
     super.key,
     required this.roomCode,
-    this.adjective = 'Brave',
-    this.animal = 'Badger',
+    this.initialAdjective,
+    this.initialAnimal,
   });
 
-  String get fullUsername => '$adjective $animal';
+  @override
+  State<IdentityRevealScreen> createState() => _IdentityRevealScreenState();
+}
+
+class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final identityProvider = context.read<IdentityProvider?>();
+      if (identityProvider != null) {
+        final authService = context.read<AuthService?>();
+        final uid = authService?.currentUid ?? 'device_uid';
+        identityProvider.resolveIdentity(
+          roomCode: widget.roomCode,
+          uid: uid,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final identityProvider = context.watch<IdentityProvider?>();
+    final identity = identityProvider?.currentIdentity;
+    final isLoading = identityProvider?.isLoading ?? false;
+
+    final adjective = identity?.adjective ?? widget.initialAdjective ?? 'Brave';
+    final animal = identity?.animal ?? widget.initialAnimal ?? 'Badger';
+    final isRestored = identity?.isRestored ?? false;
+    final fullUsername = '$adjective $animal';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -50,7 +81,7 @@ class IdentityRevealScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Room #$roomCode',
+              'Room #${widget.roomCode}',
               style: const TextStyle(
                 color: AppColors.primaryText,
                 fontSize: 16,
@@ -92,34 +123,45 @@ class IdentityRevealScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'For this room you are',
-                      style: TextStyle(
+                    Text(
+                      isRestored ? 'Welcome back! For this room you are' : 'For this room you are',
+                      style: const TextStyle(
                         color: AppColors.secondaryText,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 18),
 
                     // Big 2-line Neon Lime Persona Name
-                    Text(
-                      '$adjective\n$animal',
-                      style: const TextStyle(
-                        color: AppColors.primaryAccent,
-                        fontSize: 34,
-                        fontWeight: FontWeight.w900,
-                        height: 1.15,
-                        letterSpacing: -0.5,
+                    if (isLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.0),
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryAccent,
+                        ),
+                      )
+                    else
+                      Text(
+                        '$adjective\n$animal',
+                        style: const TextStyle(
+                          color: AppColors.primaryAccent,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          height: 1.15,
+                          letterSpacing: -0.5,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
                     const SizedBox(height: 24),
 
                     // Privacy note inside card
-                    const Text(
-                      'This is your anonymous identity, visible only to users in this room.',
-                      style: TextStyle(
+                    Text(
+                      isRestored
+                          ? 'Your previous anonymous identity for this room was restored from this device.'
+                          : 'This is your anonymous identity, visible only to users in this room.',
+                      style: const TextStyle(
                         color: AppColors.secondaryText,
                         fontSize: 12,
                         height: 1.45,
@@ -135,16 +177,19 @@ class IdentityRevealScreen extends StatelessWidget {
               // Figma CTA: "Acknowledge and continue"
               AppButton(
                 text: 'Acknowledge and continue',
-                onPressed: () {
-                  Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.chat,
-                    arguments: ChatArgs(
-                      roomCode: roomCode,
-                      username: fullUsername,
-                    ),
-                  );
-                },
+                isLoading: isLoading,
+                onPressed: isLoading
+                    ? null
+                    : () {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.chat,
+                          arguments: ChatArgs(
+                            roomCode: widget.roomCode,
+                            username: fullUsername,
+                          ),
+                        );
+                      },
               ),
               const SizedBox(height: 12),
             ],

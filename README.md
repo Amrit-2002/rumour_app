@@ -244,6 +244,9 @@ flutter test
   adb install -r apk/app-release.apk
   ```
 
+  If above file is not working properly then download the apk file using below link
+  https://drive.google.com/file/d/1kShjYFfr8Atk_M7qmySDOJLpgjsVJuIg/view?usp=drive_link
+
 ### 🎥 Video Demonstration
 - **Google Drive Folder:** [Watch Complete Workflow Video](https://drive.google.com/drive/folders/1iQA1qfAwFgVOAoRN8OorC5A2BCgbiTs1?usp=sharing)
 - **Covered Workflows:**

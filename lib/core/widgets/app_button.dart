@@ -41,15 +41,17 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     if (variant == AppButtonVariant.outline) {
       return OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
           minimumSize: Size.fromHeight(height),
-          side: const BorderSide(color: AppColors.secondarySurface, width: 1.5),
+          side: BorderSide(color: colors.borderInput, width: 1.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        child: _buildContent(AppColors.primaryText),
+        child: _buildContent(colors.primaryText),
       );
     }
 
@@ -58,9 +60,9 @@ class AppButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         style: TextButton.styleFrom(
           minimumSize: Size.fromHeight(height),
-          foregroundColor: AppColors.secondaryText,
+          foregroundColor: colors.secondaryText,
         ),
-        child: _buildContent(AppColors.secondaryText),
+        child: _buildContent(colors.secondaryText),
       );
     }
 
@@ -69,15 +71,15 @@ class AppButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: isEnabled ? onPressed : null,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryAccent,
-        foregroundColor: AppColors.darkText,
-        disabledBackgroundColor: AppColors.primaryAccent.withValues(alpha: 0.35),
-        disabledForegroundColor: AppColors.darkText.withValues(alpha: 0.5),
+        backgroundColor: colors.primaryAccent,
+        foregroundColor: colors.darkText,
+        disabledBackgroundColor: colors.primaryAccent.withValues(alpha: 0.35),
+        disabledForegroundColor: colors.darkText.withValues(alpha: 0.5),
         minimumSize: Size.fromHeight(height),
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      child: _buildContent(AppColors.darkText),
+      child: _buildContent(colors.darkText),
     );
   }
 

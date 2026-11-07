@@ -7,22 +7,23 @@ class AppErrorHandler {
   /// Displays a floating error snackbar.
   static void showError(BuildContext context, String message) {
     if (!context.mounted) return;
+    final colors = context.colors;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline_rounded,
-              color: AppColors.errorAccent,
+              color: colors.errorAccent,
               size: 20,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
-                  color: AppColors.primaryText,
+                style: TextStyle(
+                  color: colors.primaryText,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -30,11 +31,11 @@ class AppErrorHandler {
             ),
           ],
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.errorAccent, width: 1),
+          side: BorderSide(color: colors.errorAccent, width: 1),
         ),
         duration: const Duration(seconds: 3),
       ),
@@ -44,22 +45,23 @@ class AppErrorHandler {
   /// Displays a floating informational / success snackbar.
   static void showSuccess(BuildContext context, String message) {
     if (!context.mounted) return;
+    final colors = context.colors;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline_rounded,
-              color: AppColors.primaryAccent,
+              color: colors.primaryAccent,
               size: 20,
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
-                  color: AppColors.primaryText,
+                style: TextStyle(
+                  color: colors.primaryText,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -67,11 +69,11 @@ class AppErrorHandler {
             ),
           ],
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.primaryAccent, width: 1),
+          side: BorderSide(color: colors.primaryAccent, width: 1),
         ),
         duration: const Duration(seconds: 2),
       ),

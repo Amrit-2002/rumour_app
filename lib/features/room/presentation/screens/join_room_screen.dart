@@ -7,6 +7,7 @@ import '../../../../core/utils/input_validator.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_key_logo.dart';
+import '../../../../core/widgets/theme_toggle_button.dart';
 import '../providers/room_provider.dart';
 import '../widgets/room_code_input.dart';
 
@@ -133,9 +134,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     final roomProvider = context.watch<RoomProvider?>();
     final isLoading = roomProvider?.isLoading ?? false;
     final errorMessage = _localError ?? roomProvider?.errorMessage;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -149,6 +151,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const Align(
+                        alignment: Alignment.topRight,
+                        child: ThemeToggleButton(),
+                      ),
                       const Spacer(),
 
                       // Figma Top Key Icon Badge
@@ -161,10 +167,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                       const SizedBox(height: 32),
 
                       // Title matching Figma
-                      const Text(
+                      Text(
                         'Join A Room',
                         style: TextStyle(
-                          color: AppColors.primaryText,
+                          color: colors.primaryText,
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.3,
@@ -174,10 +180,10 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                       const SizedBox(height: 8),
 
                       // Subtitle matching Figma
-                      const Text(
+                      Text(
                         'Enter the code to join the anon chat room',
                         style: TextStyle(
-                          color: AppColors.secondaryText,
+                          color: colors.secondaryText,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,

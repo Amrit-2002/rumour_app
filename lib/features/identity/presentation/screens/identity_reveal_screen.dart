@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/utils/navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/theme_toggle_button.dart';
 import '../../../room/presentation/providers/room_provider.dart';
 import '../providers/identity_provider.dart';
 
@@ -52,6 +53,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
     final roomProvider = context.watch<RoomProvider?>();
     final identity = identityProvider?.currentIdentity;
     final isLoading = identityProvider?.isLoading ?? false;
+    final colors = context.colors;
 
     final adjective = identity?.adjective ?? widget.initialAdjective ?? 'Brave';
     final animal = identity?.animal ?? widget.initialAnimal ?? 'Badger';
@@ -61,7 +63,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
     final memberCount = rawCount > 0 ? rawCount : 1;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 12.0),
@@ -73,13 +75,13 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.secondarySurface,
+                  color: colors.secondarySurface,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderLight, width: 1),
+                  border: Border.all(color: colors.borderLight, width: 1),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.chevron_left_rounded,
-                  color: AppColors.primaryText,
+                  color: colors.primaryText,
                   size: 24,
                 ),
               ),
@@ -92,8 +94,8 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
           children: [
             Text(
               'Room #${widget.roomCode}',
-              style: const TextStyle(
-                color: AppColors.primaryText,
+              style: TextStyle(
+                color: colors.primaryText,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -101,27 +103,19 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
             const SizedBox(height: 2),
             Text(
               '$memberCount members',
-              style: const TextStyle(
-                color: AppColors.secondaryText,
+              style: TextStyle(
+                color: colors.secondaryText,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
               ),
             ),
           ],
         ),
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 12.0),
+            padding: EdgeInsets.only(right: 12.0),
             child: Center(
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySurface,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderLight, width: 1),
-                ),
-              ),
+              child: ThemeToggleButton(),
             ),
           ),
         ],
@@ -132,17 +126,17 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(flex:5),
+              const Spacer(flex: 5),
 
               // Prominent Identity Card matching Figma
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
                 decoration: BoxDecoration(
-                  color: AppColors.cardSurface,
+                  color: colors.cardSurface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppColors.borderLight,
+                    color: colors.borderLight,
                     width: 1.0,
                   ),
                 ),
@@ -151,8 +145,8 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                   children: [
                     Text(
                       isRestored ? 'Welcome back! For this room, you are' : 'For this room, you are',
-                      style: const TextStyle(
-                        color: AppColors.secondaryText,
+                      style: TextStyle(
+                        color: colors.secondaryText,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -162,10 +156,10 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
 
                     // Big 2-line Neon Lime Persona Name
                     if (isLoading)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
                         child: CircularProgressIndicator(
-                          color: AppColors.primaryAccent,
+                          color: colors.primaryAccent,
                         ),
                       )
                     else if (identityProvider?.errorMessage != null && identity == null)
@@ -176,8 +170,8 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                           children: [
                             Text(
                               identityProvider!.errorMessage!,
-                              style: const TextStyle(
-                                color: AppColors.errorAccent,
+                              style: TextStyle(
+                                color: colors.errorAccent,
                                 fontSize: 13,
                               ),
                               textAlign: TextAlign.center,
@@ -202,7 +196,7 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                               icon: const Icon(Icons.refresh_rounded, size: 16),
                               label: const Text('Retry'),
                               style: TextButton.styleFrom(
-                                foregroundColor: AppColors.primaryAccent,
+                                foregroundColor: colors.primaryAccent,
                               ),
                             ),
                           ],
@@ -211,8 +205,8 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                     else
                       Text(
                         '$adjective\n$animal',
-                        style: const TextStyle(
-                          color: AppColors.primaryAccent,
+                        style: TextStyle(
+                          color: colors.accentText,
                           fontSize: 38,
                           fontWeight: FontWeight.w900,
                           height: 1.15,
@@ -229,8 +223,8 @@ class _IdentityRevealScreenState extends State<IdentityRevealScreen> {
                         isRestored
                             ? 'Your previous anonymous identifier for this room was restored from this device.'
                             : 'This is your anonymous identifier, visible only to others in this room.',
-                        style: const TextStyle(
-                          color: AppColors.secondaryText,
+                        style: TextStyle(
+                          color: colors.secondaryText,
                           fontSize: 12,
                           height: 1.45,
                         ),

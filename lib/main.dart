@@ -5,6 +5,7 @@ import 'app.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/firestore_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/theme/theme_provider.dart';
 import 'features/chat/data/repositories/chat_repository_impl.dart';
 import 'features/chat/domain/repositories/chat_repository.dart';
 import 'features/chat/presentation/providers/chat_provider.dart';
@@ -42,6 +43,9 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<StorageService>.value(value: storageService),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (context) => ThemeProvider(context.read<StorageService>()),
+        ),
         Provider<AuthService>.value(value: authService),
         Provider<RoomRepository>(
           create: (_) => RoomRepositoryImpl(),

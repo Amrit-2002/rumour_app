@@ -13,6 +13,7 @@ class DateSeparatorChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = DateFormatter.formatDateHeader(date);
+    final colors = context.colors;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -20,17 +21,17 @@ class DateSeparatorChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
           decoration: BoxDecoration(
-            color: AppColors.dateChipBackground,
+            color: colors.dateChipBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.borderLight,
+              color: colors.borderLight,
               width: 0.8,
             ),
           ),
           child: Text(
             label,
-            style: const TextStyle(
-              color: AppColors.secondaryText,
+            style: TextStyle(
+              color: colors.secondaryText,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),

@@ -7,6 +7,7 @@ A high-performance, ephemeral anonymous group chat mobile application built with
 ## 📱 Features & Highlights
 
 - **🔑 6-Digit Room Codes:** Create collision-resistant 6-digit rooms (`[0-9A-Z]{6}`) or join existing rooms instantly.
+- **🌓 Adaptive Light / Dark Theme & Persistence:** Full dual-theme system built with Material 3 and custom `ThemeExtension` tokens. Supports Dark Mode (Figma stealth `#09090B` & Neon Lime `#BDF84F`), Light Mode (clean slate `#F8FAFC`, high-contrast rich lime accents, crisp white cards), and System default. Features an animated `ThemeToggleButton` with one-tap toggle and a long-press selection sheet, persisting preferences via `ThemeProvider` and `SharedPreferences`.
 - **🎭 RandomUser API Anonymous Identity:** Generates unique anonymous personas on demand via HTTP integration with the **RandomUser API** (`GET https://randomuser.me/api/`), formatting API responses into clean, two-word display identities (e.g., *“Brave Badger”*) without collecting any personal identifiable information (no phone, email, or KYC).
 - **💾 Room-Scoped Local Persistence:** Uses `SharedPreferences` to cache assigned personas keyed by room (`room_identity_{roomCode}`). Returning to a previously visited room seamlessly restores your persona, while different rooms grant distinct identities.
 - **⚡ Real-Time Bi-Directional Messaging:** Real-time message streaming powered by Firestore subcollections (`rooms/{roomCode}/messages`), delivering sub-500ms latency.
@@ -23,9 +24,9 @@ The UI implements the Figma design specifications:
 
 | Screen | Design Role | Key Visual Features |
 | :--- | :--- | :--- |
-| **1. Join A Room** | Entry Point | Official Rumour Key logo badge (`AppKeyLogo`), 6-slot dash input container (`- - - - - -`), "Join Room" button, and "Create New Room" outline button. |
-| **2. Anonymous Identity Reveal** | Persona Acknowledgment | Circular back button, centered Room # and member counter, dark hero card (`#101521`) with stacked persona name (**`Brave\nBadger`** in 38sp Neon Lime `#BDF84F`), privacy explanation, and **"Acknowledge and continue"** CTA. |
-| **3. Group Chat** | Real-Time Chat Feed | Back button with leave dialog, centered Room header with active dynamic member count, "Today" date chip, `@Sender` header on dark navy bubbles, `You` header on Neon Lime bubbles, and rounded input bar with circular lime send button. |
+| **1. Join A Room** | Entry Point | Official Rumour Key logo badge (`AppKeyLogo`), theme toggle button (`ThemeToggleButton`), 6-slot dash input container (`- - - - - -`), "Join Room" button, and "Create New Room" outline button. |
+| **2. Anonymous Identity Reveal** | Persona Acknowledgment | Circular back button, top theme toggle action, centered Room # and member counter, hero card with stacked persona name (**`Brave\nBadger`** in 38sp accent lime), privacy explanation, and **"Acknowledge and continue"** CTA. |
+| **3. Group Chat** | Real-Time Chat Feed | Back button with leave dialog, centered Room header with active dynamic member count, top theme toggle button and options menu, "Today" date chip, `@Sender` header on received bubbles, `You` header on Neon Lime sent bubbles, and rounded input bar with circular lime send button. |
 
 ---
 
@@ -39,8 +40,9 @@ lib/
 ├── app.dart                   # MaterialApp, global theme & typed route generator
 │
 ├── core/                      # Cross-cutting foundational modules
-│   ├── constants/             # AppColors (#09090B, #BDF84F, #101521), AppConstants
-│   ├── theme/                 # AppTheme (Material 3 dark theme)
+│   ├── constants/             # AppColors, AppColorsExtension tokens, AppConstants
+│   ├── theme/                 # AppTheme (Light & Dark M3 themes), ThemeProvider
+│   ├── widgets/               # AppButton, AppKeyLogo, ThemeToggleButton
 │   ├── utils/                 # DateFormatter, RoomCodeGenerator, InputValidator, Navigation
 │   ├── errors/                # Failures, Exceptions, AppErrorHandler
 │   └── services/              # AuthService (Anonymous Auth), StorageService (Prefs)
@@ -68,6 +70,7 @@ lib/
 3. **SharedPreferences for Identities:** $O(1)$ fast key-value lookups scoped to `room_identity_{roomCode}`, avoiding unnecessary relational SQL migrations.
 4. **Firebase Anonymous Authentication:** Guarantees cryptographic verification of message senders (`senderId == request.auth.uid`) preventing identity spoofing.
 5. **RandomUser API with Local Identity Caching:** Satisfies external identity specification by fetching personas via `https://randomuser.me/api/` on room creation/join, transforming them into two-word anonymous titles, and caching them locally against `room_identity_{roomCode}` so rejoining a room is instant and makes zero redundant network calls.
+6. **Custom ThemeExtension for Light/Dark Adaptability:** Utilizes `ThemeExtension<AppColorsExtension>` to expose semantic color tokens through `context.colors`. Decouples widgets from hardcoded colors, guaranteeing smooth dynamic theme switching without re-instantiating providers or causing layout flickers.
 
 ---
 
@@ -218,12 +221,14 @@ flutter test
 ### Test Suite Overview:
 - **`test/unit/random_user_remote_datasource_test.dart`:** Tests HTTP GET to `https://randomuser.me/api/`, JSON deserialization, 200 response, and exception handling.
 - **`test/unit/identity_repository_test.dart`:** Tests local caching, persona capitalization, fallback avoidance, and restoration flow.
+- **`test/unit/theme_test.dart`:** Tests `ThemeProvider` mode initialization, mode setting, persistence in `StorageService`, light/dark toggle, and `AppColorsExtension` interpolation.
 - **`test/unit/room_code_generator_test.dart`:** Tests 6-char length, uniqueness, and exclusion of ambiguous characters (`0`, `O`, `1`, `I`).
 - **`test/unit/message_model_test.dart`:** Tests `roomCode` property, null timestamp fallback, pending write status, and map serialization.
 - **`test/unit/validation_test.dart`:** Tests room code boundaries and 1–500 char message length validation.
 - **`test/unit/date_formatter_test.dart`:** Tests `HH:mm` time formatting, Today/Yesterday calendar separators, and multi-day checks.
 - **`test/unit/room_test.dart`:** Tests `RoomModel` serialization and default member count initialization.
 - **`test/unit/chat_test.dart`:** Tests `MessageModel` schema preparation and pending state.
+- **`test/widget/theme_toggle_test.dart`:** Tests `ThemeToggleButton` rendering, animated icon state, and dynamic theme switching across Join, Reveal, and Chat screens.
 - **`test/widget/join_room_screen_test.dart`:** Tests Figma brand assets, key logo, and reactive button state.
 - **`test/widget/chat_offline_test.dart`:** Tests offline banner rendering and pending vs. delivered sync indicators.
 - **`test/widget_test.dart`:** Full Figma UI walkthrough (`Join A Room` -> `Identity Reveal` -> `Group Chat` message composition).

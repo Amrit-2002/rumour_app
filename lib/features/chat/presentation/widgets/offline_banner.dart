@@ -11,24 +11,26 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
-      color: AppColors.secondarySurface,
+      color: colors.secondarySurface,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.wifi_off_rounded,
-            color: AppColors.syncPending,
+            color: colors.syncPending,
             size: 14,
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               message,
-              style: const TextStyle(
-                color: AppColors.syncPending,
+              style: TextStyle(
+                color: colors.syncPending,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),

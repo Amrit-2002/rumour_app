@@ -20,6 +20,8 @@ class RoomCodeInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -36,12 +38,12 @@ class RoomCodeInput extends StatelessWidget {
                   height: 60,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.secondarySurface,
+                    color: colors.secondarySurface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: errorText != null
-                          ? AppColors.errorAccent
-                          : AppColors.borderLight,
+                          ? colors.errorAccent
+                          : colors.borderLight,
                       width: 1.2,
                     ),
                   ),
@@ -59,8 +61,8 @@ class RoomCodeInput extends StatelessWidget {
                               ? Text(
                                   currentText[index],
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: AppColors.primaryAccent,
+                                  style: TextStyle(
+                                    color: colors.accentText,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -70,8 +72,8 @@ class RoomCodeInput extends StatelessWidget {
                                   height: 3.5,
                                   decoration: BoxDecoration(
                                     color: isCurrentFocus
-                                        ? AppColors.primaryText
-                                        : AppColors.secondaryText.withValues(alpha: 0.6),
+                                        ? colors.primaryText
+                                        : colors.secondaryText.withValues(alpha: 0.6),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
@@ -111,8 +113,8 @@ class RoomCodeInput extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             errorText!,
-            style: const TextStyle(
-              color: AppColors.errorAccent,
+            style: TextStyle(
+              color: colors.errorAccent,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),

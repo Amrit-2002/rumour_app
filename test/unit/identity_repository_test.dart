@@ -125,7 +125,7 @@ void main() {
         remoteDataSource: fakeDataSource,
       );
 
-      expect(
+      await expectLater(
         () => repository.getOrCreateIdentity(
           roomCode: 'FAIL01',
           uid: 'user_fallback',

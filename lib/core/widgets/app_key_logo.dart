@@ -15,6 +15,7 @@ class AppKeyLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final double keyWidth = size * 0.54;
     final double keyHeight = keyWidth * (150.0 / 286.0);
 
@@ -27,7 +28,7 @@ class AppKeyLogo extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) {
           return CustomPaint(
             size: Size(keyWidth, keyHeight),
-            painter: _KeyLogoPainter(color: AppColors.primaryAccent),
+            painter: _KeyLogoPainter(color: colors.primaryAccent),
           );
         },
       ),
@@ -41,10 +42,10 @@ class AppKeyLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.badgeSurface,
+        color: colors.badgeSurface,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.borderLight,
+          color: colors.borderLight,
           width: 1.2,
         ),
       ),

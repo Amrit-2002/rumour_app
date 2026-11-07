@@ -20,6 +20,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.78;
+    final colors = context.colors;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
@@ -34,8 +35,8 @@ class ChatBubble extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 4.0, left: 4.0, right: 4.0),
               child: Text(
                 isMe ? 'You' : '@$senderName',
-                style: const TextStyle(
-                  color: AppColors.secondaryText,
+                style: TextStyle(
+                  color: colors.secondaryText,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -47,11 +48,11 @@ class ChatBubble extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: maxWidth),
             padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
             decoration: BoxDecoration(
-              color: isMe ? AppColors.bubbleSent : AppColors.bubbleReceived,
+              color: isMe ? colors.bubbleSent : colors.bubbleReceived,
               borderRadius: BorderRadius.circular(16),
               border: isMe
                   ? null
-                  : Border.all(color: AppColors.borderLight, width: 0.8),
+                  : Border.all(color: colors.borderLight, width: 0.8),
             ),
             child: Wrap(
               alignment: WrapAlignment.end,
@@ -62,7 +63,7 @@ class ChatBubble extends StatelessWidget {
                 Text(
                   text,
                   style: TextStyle(
-                    color: isMe ? AppColors.darkText : AppColors.primaryText,
+                    color: isMe ? colors.bubbleSentText : colors.bubbleReceivedText,
                     fontSize: 14,
                     height: 1.35,
                     fontWeight: isMe ? FontWeight.w500 : FontWeight.w400,
@@ -77,8 +78,8 @@ class ChatBubble extends StatelessWidget {
                         time,
                         style: TextStyle(
                           color: isMe
-                              ? AppColors.darkText.withValues(alpha: 0.65)
-                              : AppColors.secondaryText,
+                              ? colors.bubbleSentText.withValues(alpha: 0.65)
+                              : colors.secondaryText,
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
@@ -91,8 +92,8 @@ class ChatBubble extends StatelessWidget {
                               : Icons.done_all_rounded,
                           size: 11,
                           color: isPending
-                              ? AppColors.darkText.withValues(alpha: 0.65)
-                              : AppColors.darkText,
+                              ? colors.bubbleSentText.withValues(alpha: 0.65)
+                              : colors.bubbleSentText,
                         ),
                       ],
                     ],

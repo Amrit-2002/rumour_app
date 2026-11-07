@@ -51,10 +51,12 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
+      decoration: BoxDecoration(
+        color: colors.background,
       ),
       child: SafeArea(
         top: false,
@@ -65,10 +67,10 @@ class _ChatInputBarState extends State<ChatInputBar> {
               child: Container(
                 constraints: const BoxConstraints(maxHeight: 120),
                 decoration: BoxDecoration(
-                  color: AppColors.cardSurface,
+                  color: colors.cardSurface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: AppColors.borderLight,
+                    color: colors.borderLight,
                     width: 0.8,
                   ),
                 ),
@@ -84,20 +86,20 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     required int? maxLength,
                   }) => null,
                   textCapitalization: TextCapitalization.sentences,
-                  style: const TextStyle(
-                    color: AppColors.primaryText,
+                  style: TextStyle(
+                    color: colors.primaryText,
                     fontSize: 15,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Type a message...',
                     hintStyle: TextStyle(
-                      color: AppColors.secondaryText,
+                      color: colors.secondaryText,
                       fontSize: 14,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12.0),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
                     isDense: true,
                     filled: false,
                   ),
@@ -110,25 +112,25 @@ class _ChatInputBarState extends State<ChatInputBar> {
               child: Container(
                 height: 44,
                 width: 44,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryAccent,
+                decoration: BoxDecoration(
+                  color: colors.primaryAccent,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: widget.isSending
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 18,
                           width: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.darkText,
+                              colors.darkText,
                             ),
                           ),
                         )
-                      : const Icon(
+                      : Icon(
                           Icons.near_me_rounded,
-                          color: AppColors.darkText,
+                          color: colors.darkText,
                           size: 20,
                         ),
                 ),
